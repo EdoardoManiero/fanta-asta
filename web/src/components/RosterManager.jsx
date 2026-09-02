@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ROLE_ORDER, maxSingleBid } from '../format.js';
+import PlayerSearchInput from './PlayerSearchInput.jsx';
 
 // Admin-only roster surgery: add a player to a team at a chosen price, change
 // the price paid, move a player to another team, or release one back to the
@@ -9,20 +10,11 @@ export default function RosterManager({ state, socket }) {
     a.id.localeCompare(b.id, undefined, { numeric: true })
   );
   const [teamId, setTeamId] = useState(teams[0]?.id || '');
-  const [query, setQuery] = useState('');
   const [addPrice, setAddPrice] = useState('');
   const [addPlayerId, setAddPlayerId] = useState('');
   const [editing, setEditing] = useState(null); // { playerId, price, teamId }
 
   const team = state.teams[teamId];
-
-  const candidates = useMemo(() => {
-    if (!query.trim()) return [];
-    const q = query.trim().toLowerCase();
-    return state.players
-      .filter((p) => p.status === 'available' && p.nome.toLowerCase().includes(q))
-      .slice(0, 8);
-  }, [state.players, query]);
 
   const selected = addPlayerId ? state.players.find((p) => p.id === addPlayerId) : null;
 
@@ -30,7 +22,6 @@ export default function RosterManager({ state, socket }) {
     if (!selected || !teamId || addPrice === '') return;
     socket.emit('admin:addAssignment', { playerId: selected.id, teamId, price: Number(addPrice) });
     setAddPlayerId('');
-    setQuery('');
     setAddPrice('');
   };
 
@@ -133,11 +124,12 @@ export default function RosterManager({ state, socket }) {
       <div className="space-y-2">
         <div className="text-sm text-emerald-200/70">Aggiungi un giocatore a {team.name}:</div>
         <div className="flex flex-wrap gap-2 items-center">
-          <input
-            value={selected ? `${selected.nome} (${selected.ruolo}, ${selected.squadra})` : query}
-            onChange={(e) => { setQuery(e.target.value); setAddPlayerId(''); }}
+          <PlayerSearchInput
+            players={state.players}
+            value={addPlayerId}
+            onSelect={setAddPlayerId}
             placeholder="cerca giocatore libero..."
-            className="rounded-lg bg-pitch-950 border border-emerald-900 px-3 py-1.5 text-sm outline-none focus:border-emerald-500 flex-1 min-w-[180px]"
+            filter={(p) => p.status === 'available'}
           />
           <input
             value={addPrice}
@@ -153,19 +145,6 @@ export default function RosterManager({ state, socket }) {
             Aggiungi
           </button>
         </div>
-        {!selected && candidates.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {candidates.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setAddPlayerId(p.id)}
-                className="text-xs rounded-full border border-emerald-800 px-2.5 py-1 hover:border-emerald-400"
-              >
-                {p.nome} <span className="text-emerald-200/40">({p.ruolo}, {p.squadra})</span>
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

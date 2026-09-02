@@ -47,8 +47,19 @@ scritta da zero con lo stesso scopo: gestire l'asta al posto del foglio Excel.
   apre la scheda completa: statistiche stagione scorsa (presenze, minuti, MV/FMV,
   gol, assist, ammonizioni...), note di scouting e, se presente, la stellina ★ che
   indica un tuo "obiettivo" personale segnato nell'Excel originale.
-- Foto dei giocatori recuperate da Wikipedia dove disponibile (fallback all'iniziale
-  del ruolo se non trovata) — rigenerabile con `node server/scripts/enrich-photos.mjs`.
+- Foto dei giocatori recuperate da Wikipedia dove disponibile (277 su 532, ~52%;
+  fallback all'iniziale del ruolo per gli altri) — rigenerabile con
+  `node server/scripts/enrich-photos.mjs`.
+- **Suggerimenti mentre scrivi**: cercando un giocatore (per chiamarlo o per
+  aggiungerlo a una rosa) compare una tendina con i risultati **ordinati per
+  quotazione**, navigabile con le frecce e Invio.
+- **Conferma a fine asta**: quando le offerte per un giocatore si chiudono, a tutti
+  compare una finestra con foto, nome, squadra aggiudicataria e prezzo (evidenziata
+  se l'hai vinto tu).
+- **Scheda del giocatore chiamato**: sotto i pulsanti di offerta trovi indici di
+  titolarità/affidabilità/integrità, tutte le statistiche della stagione scorsa e una
+  **heat map** che colora ogni statistica in base al percentile nel suo ruolo (il
+  numero grande resta il valore reale, così il colore è solo un aiuto visivo).
 
 ## Provarlo in locale (facoltativo, prima della serata)
 

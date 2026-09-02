@@ -1,37 +1,34 @@
 import { useEffect, useMemo, useState } from 'react';
 import PlayerAvatar from './PlayerAvatar.jsx';
+import PlayerSearchInput from './PlayerSearchInput.jsx';
+import StatHeatmap, { heatmapKeys } from './StatHeatmap.jsx';
 import { ROLE_ORDER, fmtSecs, isTarget } from '../format.js';
 
 function NominationPicker({ state, socket }) {
   const [role, setRole] = useState('TUTTI');
-  const [query, setQuery] = useState('');
+  const [pickedId, setPickedId] = useState('');
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignTeam, setAssignTeam] = useState('');
   const [assignPrice, setAssignPrice] = useState('');
 
-  const filtered = useMemo(() => {
-    let list = state.players.filter((p) => p.status === 'available');
-    if (role !== 'TUTTI') list = list.filter((p) => p.ruolo === role);
-    if (query.trim()) {
-      const q = query.trim().toLowerCase();
-      list = list.filter((p) => p.nome.toLowerCase().includes(q));
-    }
-    return list;
-  }, [state.players, role, query]);
+  const availableCount = useMemo(() => state.players.filter(
+    (p) => p.status === 'available' && (role === 'TUTTI' || p.ruolo === role)
+  ).length, [state.players, role]);
 
-  const exactMatch = query.trim() && filtered.length === 1 ? filtered[0] : null;
+  const picked = pickedId ? state.players.find((p) => p.id === pickedId) : null;
 
   const chiama = () => {
-    if (exactMatch) socket.emit('admin:nominate', { playerId: exactMatch.id });
+    if (picked) socket.emit('admin:nominate', { playerId: picked.id });
     else socket.emit('admin:nominateRandom', { role: role === 'TUTTI' ? undefined : role });
+    setPickedId('');
   };
 
   const assegna = () => {
-    if (!exactMatch || !assignTeam || !assignPrice) return;
-    socket.emit('admin:quickAssign', { playerId: exactMatch.id, teamId: assignTeam, price: Number(assignPrice) });
+    if (!picked || !assignTeam || !assignPrice) return;
+    socket.emit('admin:quickAssign', { playerId: picked.id, teamId: assignTeam, price: Number(assignPrice) });
     setAssignOpen(false);
     setAssignPrice('');
-    setQuery('');
+    setPickedId('');
   };
 
   return (
@@ -53,13 +50,14 @@ function NominationPicker({ state, socket }) {
           </button>
         ))}
       </div>
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Cerca giocatore..."
-        className="w-full rounded-lg bg-pitch-950 border border-emerald-900 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+      <PlayerSearchInput
+        players={state.players}
+        value={pickedId}
+        onSelect={setPickedId}
+        placeholder="Cerca giocatore (suggerimenti per quotazione)..."
+        filter={(p) => p.status === 'available' && (role === 'TUTTI' || p.ruolo === role)}
       />
-      <div className="text-xs text-emerald-200/40">{filtered.length} giocatori disponibili nel filtro</div>
+      <div className="text-xs text-emerald-200/40">{availableCount} giocatori disponibili nel filtro</div>
 
       {!assignOpen ? (
         <div className="flex gap-2 mt-auto pt-2">
@@ -67,10 +65,10 @@ function NominationPicker({ state, socket }) {
             onClick={chiama}
             className="flex-1 rounded-lg bg-emerald-500 text-pitch-950 font-bold py-2.5 hover:bg-emerald-400"
           >
-            {exactMatch ? `Chiama ${exactMatch.nome}` : 'Chiama a caso'}
+            {picked ? `Chiama ${picked.nome}` : 'Chiama a caso'}
           </button>
           <button
-            disabled={!exactMatch}
+            disabled={!picked}
             onClick={() => setAssignOpen(true)}
             className="rounded-lg border border-emerald-700 px-4 py-2.5 text-sm hover:border-emerald-400 disabled:opacity-30"
           >
@@ -79,7 +77,7 @@ function NominationPicker({ state, socket }) {
         </div>
       ) : (
         <div className="border-t border-emerald-900/60 pt-3 flex flex-col gap-2">
-          <div className="text-sm text-emerald-200/70">Assegna {exactMatch?.nome} direttamente (senza asta live):</div>
+          <div className="text-sm text-emerald-200/70">Assegna {picked?.nome} direttamente (senza asta live):</div>
           <div className="flex gap-2 flex-wrap">
             <select value={assignTeam} onChange={(e) => setAssignTeam(e.target.value)}
               className="bg-pitch-950 border border-emerald-900 rounded-md px-2 py-1.5 text-sm">
@@ -104,10 +102,48 @@ function NominationPicker({ state, socket }) {
   );
 }
 
+function Dots({ value }) {
+  return (
+    <span className="inline-flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <span key={i} className={`w-2 h-2 rounded-full ${i < value ? 'bg-emerald-400' : 'bg-emerald-900'}`} />
+      ))}
+    </span>
+  );
+}
+
+// Only the stats the heat map does NOT already rank, and only when they carry a
+// value - so nothing is printed twice and goalkeepers don't show a row of zeros.
+const ALL_STATS = [
+  { key: 'presenze', label: 'Presenze' },
+  { key: 'minuti', label: 'Minuti' },
+  { key: 'puntiTitolare', label: 'Da titolare' },
+  { key: 'mv', label: 'MV' },
+  { key: 'fmv', label: 'FMV' },
+  { key: 'fmvExp', label: 'FM attesa' },
+  { key: 'gol', label: 'Gol' },
+  { key: 'assist', label: 'Assist' },
+  { key: 'ammonizioni', label: 'Ammonizioni' },
+  { key: 'espulsioni', label: 'Espulsioni' },
+  { key: 'rigSegnati', label: 'Rig. segnati' },
+  { key: 'rigSbagliati', label: 'Rig. sbagliati' },
+  { key: 'golSubiti', label: 'Gol subiti' },
+  { key: 'rigParati', label: 'Rig. parati' },
+];
+
+const extraStats = (p) => {
+  const ranked = new Set(heatmapKeys(p.ruolo));
+  return ALL_STATS
+    .filter((s) => !ranked.has(s.key))
+    .map((s) => ({ label: s.label, value: p[s.key] }))
+    .filter((s) => s.value);
+};
+
 function OnTheBlock({ state, myTeam, socket, onSelectPlayer }) {
   const ca = state.currentAuction;
   const [now, setNow] = useState(Date.now());
   const [customAmount, setCustomAmount] = useState('');
+  const [statsOpen, setStatsOpen] = useState(true);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 200);
@@ -203,6 +239,46 @@ function OnTheBlock({ state, myTeam, socket, onSelectPlayer }) {
       ) : (
         <div className="mt-5 text-sm text-emerald-200/50">Entra in una squadra per poter offrire.</div>
       )}
+
+      <div className="mt-5 border-t border-emerald-900/60 pt-4">
+        <button
+          onClick={() => setStatsOpen((v) => !v)}
+          className="w-full flex items-center justify-between text-xs font-bold uppercase tracking-wide text-emerald-200/50 hover:text-emerald-200/80"
+        >
+          <span>Statistiche stagione scorsa</span>
+          <span>{statsOpen ? '▾' : '▸'}</span>
+        </button>
+
+        {statsOpen && (
+          <div className="mt-3 space-y-3">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm bg-pitch-950/60 rounded-lg px-3 py-2">
+              <span className="flex items-center gap-2">Titolarità <Dots value={player.titolarita} /></span>
+              <span className="flex items-center gap-2">Affidabilità <Dots value={player.affidabilita} /></span>
+              <span className="flex items-center gap-2">Integrità <Dots value={player.integrita} /></span>
+              <span className="text-emerald-200/50">PMA <span className="font-mono text-emerald-200/80">{player.pma}</span></span>
+            </div>
+
+            <StatHeatmap player={player} players={state.players} />
+
+            {extraStats(player).length > 0 && (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 text-sm">
+              {extraStats(player).map((st) => (
+                <div key={st.label} className="bg-pitch-950/60 rounded-lg px-2.5 py-1.5">
+                  <div className="text-[10px] uppercase tracking-wide text-emerald-200/40 truncate">{st.label}</div>
+                  <div className="font-mono font-semibold">{st.value}</div>
+                </div>
+              ))}
+            </div>
+            )}
+
+            {player.commento && (
+              <div className="text-sm text-emerald-200/60 whitespace-pre-line bg-pitch-950/60 rounded-lg px-3 py-2">
+                {player.commento}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -20,6 +20,20 @@ const PASSCODE = 'restest';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Poll until the server is actually accepting connections. A fixed sleep is a
+// race: startup time grows with the player data file.
+async function waitForServer(timeoutMs = 20000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(`http://localhost:${PORT}/`);
+      if (res.ok) return;
+    } catch { /* not up yet */ }
+    await sleep(150);
+  }
+  throw new Error(`server did not start on :${PORT}`);
+}
+
 const results = [];
 function check(name, ok, detail = '') {
   results.push({ name, ok, detail });
@@ -71,7 +85,7 @@ function rosterCount(state, teamId) {
 async function main() {
   console.log(`\nStarting server on :${PORT}\n`);
   startServer();
-  await sleep(1300);
+  await waitForServer();
 
   const admin = connect();
   const adminBox = track(admin);

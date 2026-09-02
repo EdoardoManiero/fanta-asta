@@ -22,6 +22,20 @@ const N_TEAMS = 10;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Poll until the server is actually accepting connections. A fixed sleep is a
+// race: startup time grows with the player data file.
+async function waitForServer(timeoutMs = 20000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(`http://localhost:${PORT}/`);
+      if (res.ok) return;
+    } catch { /* not up yet */ }
+    await sleep(150);
+  }
+  throw new Error(`server did not start on :${PORT}`);
+}
+
 function startServer() {
   if (fs.existsSync(STATE_FILE)) fs.rmSync(STATE_FILE);
   const child = fork(SERVER_ENTRY, {
@@ -56,7 +70,7 @@ async function waitForState(socket, predicate, timeoutMs = 8000) {
 async function main() {
   console.log(`Starting server on :${PORT}...`);
   const server = startServer();
-  await sleep(1200);
+  await waitForServer();
 
   const admin = connect();
   const clients = Array.from({ length: N_TEAMS }, () => connect());

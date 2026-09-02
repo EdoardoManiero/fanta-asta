@@ -10,6 +10,7 @@ import FasceGiocatori from './components/FasceGiocatori.jsx';
 import EventLog from './components/EventLog.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
 import PlayerDetailModal from './components/PlayerDetailModal.jsx';
+import SaleResultModal from './components/SaleResultModal.jsx';
 
 const clientId = getClientId();
 
@@ -21,6 +22,8 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [tab, setTab] = useState('rose');
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+  const [sale, setSale] = useState(null);
+  const lastHistoryLen = useRef(null);
 
   useEffect(() => {
     const socket = createSocket();
@@ -33,7 +36,16 @@ export default function App() {
       if (savedPasscode) socket.emit('admin:auth', { passcode: savedPasscode });
     });
     socket.on('disconnect', () => setConnected(false));
-    socket.on('state', (s) => setState(s));
+    socket.on('state', (s) => {
+      // announce a sale the moment the history grows (never on first load,
+      // and never when history shrinks after an undo/reset)
+      const len = s.history.length;
+      if (lastHistoryLen.current != null && len > lastHistoryLen.current) {
+        setSale(s.history[len - 1]);
+      }
+      lastHistoryLen.current = len;
+      setState(s);
+    });
     socket.on('admin:ok', () => setIsAdmin(true));
     socket.on('error', ({ message }) => {
       setToast(message);
@@ -153,6 +165,13 @@ export default function App() {
           </>
         )}
       </main>
+
+      <SaleResultModal
+        sale={sale}
+        player={sale ? state.players.find((p) => p.id === sale.playerId) : null}
+        isMine={Boolean(sale && myTeam && sale.teamId === myTeam.id)}
+        onClose={() => setSale(null)}
+      />
 
       <PlayerDetailModal
         player={selectedPlayer}
