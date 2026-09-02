@@ -79,6 +79,7 @@ io.on('connection', (socket) => {
   socket.on('admin:nominate', requireAdmin(({ playerId }) => respond(socket, 'admin:nominate', engine.nominate(playerId))));
   socket.on('admin:nominateRandom', requireAdmin(({ role }) => respond(socket, 'admin:nominateRandom', engine.nominateRandom(role))));
   socket.on('admin:startTimer', requireAdmin(({ seconds }) => respond(socket, 'admin:startTimer', engine.adminStartTimer(seconds))));
+  socket.on('admin:adjustTimer', requireAdmin(({ seconds }) => respond(socket, 'admin:adjustTimer', engine.adminAdjustTimer(seconds))));
   socket.on('admin:pauseTimer', requireAdmin(() => respond(socket, 'admin:pauseTimer', engine.adminPauseTimer())));
   socket.on('admin:skip', requireAdmin(() => respond(socket, 'admin:skip', engine.adminSkip())));
   socket.on('admin:undoLast', requireAdmin(() => respond(socket, 'admin:undoLast', engine.adminUndoLast())));

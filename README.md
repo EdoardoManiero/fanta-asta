@@ -155,9 +155,19 @@ mi dici di procedere.
 
 ## Modificare le regole della lega
 
-Prima di premere "Avvia asta" nel pannello Admin puoi cambiare budget, numero di
-slot per ruolo, durata del timer e soft-close. Dopo l'avvio le regole sono bloccate
-(per correttezza verso tutti i partecipanti).
+**Prima** di premere "Avvia asta": budget e numero di slot per ruolo. Dopo l'avvio
+restano bloccati, perché cambiarli riscriverebbe le condizioni sotto cui tutti hanno
+già offerto.
+
+**In qualsiasi momento**, anche ad asta in corso, dal pannello Admin:
+- durata del **timer**, **soft-close** e **rilancio minimo** (campi + pulsanti rapidi
+  -10s / -5s / +5s / +10s per il timer di default);
+- **+/- secondi al conto alla rovescia già in corso**, per dare un attimo in più su un
+  giocatore conteso o accorciare quando la sala è pronta;
+- avvio/pausa del timer, "non assegnato", assegnazione manuale.
+
+I controlli sono visibili anche quando non c'è nessun giocatore sul tavolo (in quel
+caso quelli che riguardano il giocatore corrente sono disattivati).
 
 ## Struttura del progetto
 

@@ -103,9 +103,13 @@ export class AuctionEngine {
 
   // ---- admin actions ----
 
+  // Timing rules (countdown, soft-close, minimum raise) can be tuned at any
+  // point - they don't invalidate anything already sold. Budget and roster
+  // slots stay locked once the auction is live, since changing them would
+  // rewrite the terms everyone has already been bidding under.
   adminSetConfig({ budget, slots, timerSeconds, softCloseSeconds, minIncrement }) {
-    if (this.state.phase !== 'lobby') {
-      return { ok: false, error: 'Le regole si possono modificare solo prima di iniziare.' };
+    if ((budget != null || slots != null) && this.state.phase !== 'lobby') {
+      return { ok: false, error: 'Budget e slot si possono modificare solo prima di iniziare.' };
     }
     if (budget) this.state.config.budget = budget;
     if (slots) this.state.config.slots = slots;
@@ -171,6 +175,19 @@ export class AuctionEngine {
     if (!this.state.currentAuction) return { ok: false, error: 'Nessun giocatore sul tavolo.' };
     const s = seconds || this.state.config.timerSeconds;
     this.state.currentAuction.timerEndsAt = Date.now() + s * 1000;
+    this._persist();
+    return { ok: true };
+  }
+
+  // Add or remove seconds from the countdown already running.
+  adminAdjustTimer(deltaSeconds) {
+    const ca = this.state.currentAuction;
+    if (!ca) return { ok: false, error: 'Nessun giocatore sul tavolo.' };
+    if (!ca.timerEndsAt) return { ok: false, error: 'Il timer non è in corso: avvialo prima.' };
+    const delta = Number(deltaSeconds) || 0;
+    // never let an adjustment close the auction instantly
+    ca.timerEndsAt = Math.max(Date.now() + 1000, ca.timerEndsAt + delta * 1000);
+    this._pushLog(`Timer ${delta >= 0 ? '+' : ''}${delta}s.`);
     this._persist();
     return { ok: true };
   }
