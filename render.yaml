@@ -1,0 +1,16 @@
+# Free-plan blueprint: no persistent disk (Render free web services have an
+# ephemeral filesystem and a paid instance type is required to attach one), so
+# the auction state lives only in the running container's memory/disk for as
+# long as it stays up. That's fine for one continuous auction session — just
+# open the site a few minutes before you start so it's already warm and don't
+# trigger a redeploy mid-auction. See README for upgrading to a paid instance
+# type if you want the state to survive a restart.
+services:
+  - type: web
+    name: asta-carmy-classic
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: ADMIN_PASSCODE
+        sync: false

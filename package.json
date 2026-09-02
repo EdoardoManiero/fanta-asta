@@ -1,0 +1,13 @@
+{
+  "name": "asta-fantalab-clone",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build:web": "cd web && npm install && npm run build",
+    "install:server": "cd server && npm install",
+    "build": "npm run install:server && npm run build:web",
+    "start": "cd server && npm start",
+    "dev:server": "cd server && npm install && npm run dev",
+    "dev:web": "cd web && npm install && npm run dev"
+  }
+}
