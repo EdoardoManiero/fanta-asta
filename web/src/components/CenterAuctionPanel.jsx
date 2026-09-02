@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import RoleBadge from './RoleBadge.jsx';
-import { ROLE_ORDER, fmtSecs } from '../format.js';
+import PlayerAvatar from './PlayerAvatar.jsx';
+import { ROLE_ORDER, fmtSecs, isTarget } from '../format.js';
 
 function NominationPicker({ state, socket }) {
   const [role, setRole] = useState('TUTTI');
@@ -104,7 +104,7 @@ function NominationPicker({ state, socket }) {
   );
 }
 
-function OnTheBlock({ state, myTeam, socket }) {
+function OnTheBlock({ state, myTeam, socket, onSelectPlayer }) {
   const ca = state.currentAuction;
   const [now, setNow] = useState(Date.now());
   const [customAmount, setCustomAmount] = useState('');
@@ -123,23 +123,27 @@ function OnTheBlock({ state, myTeam, socket }) {
 
   const placeBid = (amount) => {
     if (!myTeam) return;
-    socket.emit('bid', { teamId: myTeam.id, amount });
+    // Tag the bid with the round it was made in: if a slow connection delays
+    // it past the end of this round, the server rejects it instead of
+    // applying it to the next player.
+    socket.emit('bid', { teamId: myTeam.id, amount, playerId: player.id, auctionId: ca.auctionId });
   };
 
   return (
     <div className="bg-pitch-900/60 border border-emerald-900 rounded-2xl p-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3">
-          <div className="w-16 h-16 rounded-full bg-pitch-950 border-2 border-emerald-700 flex items-center justify-center text-xl font-black text-emerald-300">
-            {player.ruolo}
-          </div>
+        <button onClick={() => onSelectPlayer(player.id)} className="flex items-center gap-3 text-left">
+          <PlayerAvatar player={player} size="lg" />
           <div>
-            <div className="text-2xl font-bold">{player.nome}</div>
+            <div className="text-2xl font-bold flex items-center gap-2">
+              {isTarget(player) && <span className="text-amber-300" title="Nel tuo mirino">★</span>}
+              {player.nome}
+            </div>
             <div className="text-emerald-200/60 text-sm">
               {player.squadra} · Fascia {player.fascia} · Quot. {player.quotazione} · Consigliato {player.prezzoConsigliato}
             </div>
           </div>
-        </div>
+        </button>
         <div className="text-right">
           <div className={`text-3xl font-mono font-bold ${msLeft != null && msLeft < 5000 ? 'text-rose-400' : ''}`}>
             {ca.timerEndsAt ? fmtSecs(msLeft) : '—'}
@@ -147,6 +151,16 @@ function OnTheBlock({ state, myTeam, socket }) {
           <div className="text-xs text-emerald-200/50">tempo rimanente</div>
         </div>
       </div>
+
+      {player.note?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          {player.note.map((n) => (
+            <span key={n} className="text-xs bg-pitch-950 border border-emerald-900 rounded-full px-2.5 py-1 text-emerald-200/60">
+              {n}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="mt-5 flex items-center justify-between bg-pitch-950/70 rounded-xl p-4 border border-emerald-900/60">
         <div>
@@ -193,7 +207,7 @@ function OnTheBlock({ state, myTeam, socket }) {
   );
 }
 
-export default function CenterAuctionPanel({ state, myTeam, isAdmin, socket }) {
+export default function CenterAuctionPanel({ state, myTeam, isAdmin, socket, onSelectPlayer }) {
   if (state.phase === 'lobby') {
     return (
       <div className="bg-pitch-900/60 border border-emerald-900 rounded-2xl p-8 text-center text-emerald-200/60">
@@ -203,7 +217,7 @@ export default function CenterAuctionPanel({ state, myTeam, isAdmin, socket }) {
   }
 
   if (state.currentAuction) {
-    return <OnTheBlock state={state} myTeam={myTeam} socket={socket} />;
+    return <OnTheBlock state={state} myTeam={myTeam} socket={socket} onSelectPlayer={onSelectPlayer} />;
   }
 
   if (isAdmin) {

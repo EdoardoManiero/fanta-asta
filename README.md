@@ -37,6 +37,12 @@ scritta da zero con lo stesso scopo: gestire l'asta al posto del foglio Excel.
   per nome e ruolo.
 - Se un client si disconnette/aggiorna la pagina, ritrova automaticamente la propria
   squadra (l'identità è salvata nel browser).
+- Click su un giocatore (in "Giocatori", "Fasce Giocatori" o sul tavolo dell'asta)
+  apre la scheda completa: statistiche stagione scorsa (presenze, minuti, MV/FMV,
+  gol, assist, ammonizioni...), note di scouting e, se presente, la stellina ★ che
+  indica un tuo "obiettivo" personale segnato nell'Excel originale.
+- Foto dei giocatori recuperate da Wikipedia dove disponibile (fallback all'iniziale
+  del ruolo se non trovata) — rigenerabile con `node server/scripts/enrich-photos.mjs`.
 
 ## Provarlo in locale (facoltativo, prima della serata)
 
@@ -46,6 +52,44 @@ npm start             # avvia il server su http://localhost:4000
 ```
 
 Apri `http://localhost:4000` in più schede del browser per simulare più partecipanti.
+
+## Test di carico (concorrenza)
+
+Per verificare che l'asta regga bene con 10 persone che offrono contemporaneamente
+e in modo aggressivo (offerte simultanee, spesso identiche, in ordine casuale):
+
+```bash
+node server/scripts/load-test-bidding.mjs [round] [offerte-per-client-per-round]
+# default: 8 round, 15 raffiche per client
+```
+
+Avvia un server isolato su una porta casuale, simula 10 "bot" che si contendono
+ogni giocatore con raffiche di offerte concorrenti e verifica al termine di ogni
+round che ci sia un solo vincitore, il budget sia scalato esattamente, nessun
+budget sia andato negativo e il totale speso combaci con lo storico — stampa
+PASS/FAIL con il dettaglio di eventuali anomalie.
+
+
+## Test di resilienza (connessioni instabili, casi limite)
+
+```bash
+node server/scripts/test-resilience.mjs
+```
+
+Verifica 23 scenari che *non devono* rompere l'asta, tra cui:
+
+- **Connessione instabile**: chi cade mentre è in testa vince comunque il
+  giocatore; alla riconnessione ritrova la sua squadra e risulta di nuovo
+  online; la squadra di un disconnesso non può essere rubata; un'offerta
+  partita per il giocatore precedente e arrivata in ritardo viene **rifiutata**
+  invece di finire sul giocatore attualmente sul tavolo; l'asta si chiude
+  correttamente anche se cade la connessione dell'admin.
+- **Concorrenza**: due admin che chiamano insieme, raffica di offerte a cavallo
+  della scadenza del timer (un solo vincitore, contabilità coerente), reset
+  mentre volano le offerte.
+- **Validazione**: codice admin errato, azioni admin da non-admin, occupare o
+  rinominare la squadra altrui, offerte sotto il minimo/oltre budget/oltre la
+  regola della riserva, offerte senza giocatore sul tavolo.
 
 ## Hosting per la serata dell'asta (Render, gratis)
 

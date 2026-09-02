@@ -141,7 +141,12 @@ export class AuctionEngine {
     const player = this.state.players.find((p) => p.id === playerId);
     if (!player) return { ok: false, error: 'Giocatore non trovato.' };
     if (player.status !== 'available') return { ok: false, error: 'Giocatore già assegnato.' };
+    this.state.nextAuctionId = (this.state.nextAuctionId || 0) + 1;
     this.state.currentAuction = {
+      // Identifies this specific round. A bid delayed by a slow connection
+      // carries the id of the round it was made in, so it can be rejected
+      // instead of silently landing on whoever is on the table now.
+      auctionId: this.state.nextAuctionId,
       playerId,
       currentBid: 0,
       currentBidderTeamId: null,
@@ -282,7 +287,19 @@ export class AuctionEngine {
     return { ok: true, team, player, role };
   }
 
-  bid(teamId, amount) {
+  // `ctx` carries which round the bidder believed they were bidding on.
+  // On a laggy connection the packet can arrive after that round ended, so a
+  // mismatch means the bid is stale and must never be applied to the player
+  // currently on the table.
+  bid(teamId, amount, ctx = {}) {
+    const ca0 = this.state.currentAuction;
+    if (!ca0) return { ok: false, error: 'Nessun giocatore sul tavolo.' };
+    if (ctx.auctionId != null && ctx.auctionId !== ca0.auctionId) {
+      return { ok: false, error: 'Offerta scaduta: il giocatore sul tavolo è cambiato.' };
+    }
+    if (ctx.playerId != null && ctx.playerId !== ca0.playerId) {
+      return { ok: false, error: 'Offerta scaduta: il giocatore sul tavolo è cambiato.' };
+    }
     const check = this._validateBid(teamId, amount);
     if (!check.ok) return check;
     const ca = this.state.currentAuction;

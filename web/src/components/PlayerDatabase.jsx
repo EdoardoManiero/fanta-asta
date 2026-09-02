@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import RoleBadge from './RoleBadge.jsx';
-import { ROLE_ORDER } from '../format.js';
+import PlayerAvatar from './PlayerAvatar.jsx';
+import { ROLE_ORDER, isTarget } from '../format.js';
 
 const COLUMNS = [
   { key: 'nome', label: 'Nome' },
@@ -16,10 +16,11 @@ const COLUMNS = [
   { key: 'assist', label: 'Assist' },
 ];
 
-export default function PlayerDatabase({ state, isAdmin, onNominate }) {
+export default function PlayerDatabase({ state, isAdmin, onNominate, onSelectPlayer }) {
   const [role, setRole] = useState('P');
   const [query, setQuery] = useState('');
   const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [onlyTargets, setOnlyTargets] = useState(false);
   const [sortKey, setSortKey] = useState('quotazione');
   const [sortDir, setSortDir] = useState('desc');
 
@@ -30,6 +31,7 @@ export default function PlayerDatabase({ state, isAdmin, onNominate }) {
       list = list.filter((p) => p.nome.toLowerCase().includes(q) || (p.squadra || '').toLowerCase().includes(q));
     }
     if (onlyAvailable) list = list.filter((p) => p.status === 'available');
+    if (onlyTargets) list = list.filter(isTarget);
     list = [...list].sort((a, b) => {
       const av = a[sortKey] ?? 0;
       const bv = b[sortKey] ?? 0;
@@ -37,7 +39,7 @@ export default function PlayerDatabase({ state, isAdmin, onNominate }) {
       return sortDir === 'asc' ? av - bv : bv - av;
     });
     return list;
-  }, [state.players, role, query, onlyAvailable, sortKey, sortDir]);
+  }, [state.players, role, query, onlyAvailable, onlyTargets, sortKey, sortDir]);
 
   const toggleSort = (key) => {
     if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -71,6 +73,10 @@ export default function PlayerDatabase({ state, isAdmin, onNominate }) {
           <input type="checkbox" checked={onlyAvailable} onChange={(e) => setOnlyAvailable(e.target.checked)} />
           solo liberi
         </label>
+        <label className="flex items-center gap-1.5 text-sm text-amber-300/80">
+          <input type="checkbox" checked={onlyTargets} onChange={(e) => setOnlyTargets(e.target.checked)} />
+          ★ solo obiettivi
+        </label>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-emerald-900">
@@ -93,9 +99,16 @@ export default function PlayerDatabase({ state, isAdmin, onNominate }) {
           </thead>
           <tbody>
             {filtered.map((p) => (
-              <tr key={p.id} className={`border-t border-emerald-900/50 ${p.status !== 'available' ? 'opacity-40' : ''}`}>
-                <td className="p-2"><RoleBadge role={p.ruolo} /></td>
-                <td className="p-2 font-medium whitespace-nowrap">{p.nome}</td>
+              <tr
+                key={p.id}
+                onClick={() => onSelectPlayer(p.id)}
+                className={`border-t border-emerald-900/50 cursor-pointer hover:bg-pitch-900/40 ${p.status !== 'available' ? 'opacity-40' : ''}`}
+              >
+                <td className="p-2"><PlayerAvatar player={p} size="sm" /></td>
+                <td className="p-2 font-medium whitespace-nowrap">
+                  {isTarget(p) && <span className="text-amber-300 mr-1">★</span>}
+                  {p.nome}
+                </td>
                 <td className="p-2">{p.squadra}</td>
                 <td className="p-2">{p.fascia}</td>
                 <td className="p-2 font-mono">{p.quotazione}</td>
@@ -119,7 +132,7 @@ export default function PlayerDatabase({ state, isAdmin, onNominate }) {
                   <td className="p-2">
                     {p.status === 'available' && !state.currentAuction && (
                       <button
-                        onClick={() => onNominate(p.id)}
+                        onClick={(e) => { e.stopPropagation(); onNominate(p.id); }}
                         className="text-xs rounded-md border border-emerald-700 px-2 py-1 hover:border-emerald-400"
                       >
                         Metti all'asta

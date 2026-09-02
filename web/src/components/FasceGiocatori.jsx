@@ -1,8 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
-import RoleBadge from './RoleBadge.jsx';
-import { ROLE_ORDER, fasciaRank } from '../format.js';
+import PlayerAvatar from './PlayerAvatar.jsx';
+import { ROLE_ORDER, fasciaRank, isTarget } from '../format.js';
 
-export default function FasceGiocatori({ state, isAdmin, socket }) {
+export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer }) {
   const [role, setRole] = useState('P');
   const [query, setQuery] = useState('');
   const [label, setLabel] = useState('');
@@ -135,9 +135,16 @@ export default function FasceGiocatori({ state, isAdmin, socket }) {
           </thead>
           <tbody>
             {players.map((p) => (
-              <tr key={p.id} className="border-t border-emerald-900/50">
-                <td className="p-2"><RoleBadge role={p.ruolo} /></td>
-                <td className="p-2 font-medium whitespace-nowrap">{p.nome}</td>
+              <tr
+                key={p.id}
+                onClick={() => onSelectPlayer(p.id)}
+                className="border-t border-emerald-900/50 cursor-pointer hover:bg-pitch-900/40"
+              >
+                <td className="p-2"><PlayerAvatar player={p} size="sm" /></td>
+                <td className="p-2 font-medium whitespace-nowrap">
+                  {isTarget(p) && <span className="text-amber-300 mr-1">★</span>}
+                  {p.nome}
+                </td>
                 <td className="p-2">{p.squadra}</td>
                 <td className="p-2">{p.fascia}</td>
                 {sources.map((s) => (

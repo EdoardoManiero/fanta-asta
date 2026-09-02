@@ -36,6 +36,9 @@ io.on('connection', (socket) => {
 
   socket.on('hello', ({ clientId: cid }) => {
     clientId = cid;
+    // A returning client (refresh, or a connection that dropped and came back)
+    // must show as online again to everyone, not stay stuck offline.
+    engine.setConnected(clientId, true);
     if (adminClientIds.has(clientId)) socket.emit('admin:ok');
   });
 
@@ -66,9 +69,9 @@ io.on('connection', (socket) => {
     respond(socket, 'team:rename', engine.renameTeam(clientId, teamId, name));
   });
 
-  socket.on('bid', ({ teamId, amount }) => {
+  socket.on('bid', ({ teamId, amount, playerId, auctionId }) => {
     if (!clientId) return;
-    respond(socket, 'bid', engine.bid(teamId, Number(amount)));
+    respond(socket, 'bid', engine.bid(teamId, Number(amount), { playerId, auctionId }));
   });
 
   socket.on('admin:setConfig', requireAdmin((cfg) => respond(socket, 'admin:setConfig', engine.adminSetConfig(cfg))));

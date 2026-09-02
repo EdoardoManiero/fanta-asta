@@ -15,6 +15,10 @@ export const ROLE_BAR_COLORS = {
 
 export const FASCIA_ORDER = ['Top', 'Semi-Top', 'Terza', 'Quarta', 'Titolare "Scarso"', 'Scomm.', 'Outsider', 'Non Impostata'];
 
+export function isTarget(player) {
+  return /^s[ìi]$/i.test((player.obiettivo || '').trim());
+}
+
 export function fasciaRank(f) {
   const i = FASCIA_ORDER.indexOf(f);
   return i === -1 ? FASCIA_ORDER.length : i;

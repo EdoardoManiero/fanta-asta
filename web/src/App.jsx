@@ -9,6 +9,7 @@ import PlayerDatabase from './components/PlayerDatabase.jsx';
 import FasceGiocatori from './components/FasceGiocatori.jsx';
 import EventLog from './components/EventLog.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
+import PlayerDetailModal from './components/PlayerDetailModal.jsx';
 
 const clientId = getClientId();
 
@@ -19,6 +20,7 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [toast, setToast] = useState(null);
   const [tab, setTab] = useState('rose');
+  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
 
   useEffect(() => {
     const socket = createSocket();
@@ -60,6 +62,9 @@ export default function App() {
     socketRef.current.emit('admin:nominate', { playerId });
   };
 
+  const selectedPlayer = selectedPlayerId ? state.players.find((p) => p.id === selectedPlayerId) : null;
+  const selectedPlayerTeamName = selectedPlayer?.soldTo ? state.teams[selectedPlayer.soldTo]?.name : null;
+
   const TABS = [
     { key: 'rose', label: 'Rose Squadre' },
     { key: 'giocatori', label: 'Giocatori' },
@@ -96,7 +101,13 @@ export default function App() {
           <>
             <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_300px] gap-4 mb-6">
               <TeamsSidebar state={state} myTeamId={myTeam?.id} />
-              <CenterAuctionPanel state={state} myTeam={myTeam} isAdmin={isAdmin} socket={socketRef.current} />
+              <CenterAuctionPanel
+                state={state}
+                myTeam={myTeam}
+                isAdmin={isAdmin}
+                socket={socketRef.current}
+                onSelectPlayer={setSelectedPlayerId}
+              />
               <InsightPanel state={state} />
             </div>
 
@@ -117,11 +128,21 @@ export default function App() {
             {tab === 'rose' && <BoardTab state={state} myTeamId={myTeam?.id} />}
 
             {tab === 'giocatori' && (
-              <PlayerDatabase state={state} isAdmin={isAdmin} onNominate={handleNominate} />
+              <PlayerDatabase
+                state={state}
+                isAdmin={isAdmin}
+                onNominate={handleNominate}
+                onSelectPlayer={setSelectedPlayerId}
+              />
             )}
 
             {tab === 'fasce' && (
-              <FasceGiocatori state={state} isAdmin={isAdmin} socket={socketRef.current} />
+              <FasceGiocatori
+                state={state}
+                isAdmin={isAdmin}
+                socket={socketRef.current}
+                onSelectPlayer={setSelectedPlayerId}
+              />
             )}
 
             {tab === 'admin' && (
@@ -132,6 +153,12 @@ export default function App() {
           </>
         )}
       </main>
+
+      <PlayerDetailModal
+        player={selectedPlayer}
+        teamName={selectedPlayerTeamName}
+        onClose={() => setSelectedPlayerId(null)}
+      />
     </div>
   );
 }
