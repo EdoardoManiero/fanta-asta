@@ -342,7 +342,86 @@ async function main() {
     Object.values(afterReset.teams).every((t) => t.budget === afterReset.config.budget && rosterCount(afterReset, t.id) === 0));
 
   // ---------------------------------------------------------------
-  console.log('\n[E] Integrità finale');
+  console.log('\n[E] Gestione rose da parte dell\'admin');
+  // ---------------------------------------------------------------
+
+  admin.emit('admin:start');
+  await waitFor(adminBox, (s) => s.phase === 'live', 5000, 'restart after reset');
+
+  const budget0 = adminBox.state.config.budget;
+  const pA = adminBox.state.players.find((p) => p.status === 'available' && p.ruolo === 'A');
+  admin.emit('admin:addAssignment', { playerId: pA.id, teamId: 'team-2', price: 90 });
+  await waitFor(adminBox, (s) => s.players.find((p) => p.id === pA.id)?.status === 'sold', 4000, 'manual add');
+  let st = adminBox.state;
+  check('Admin può aggiungere un giocatore a una squadra al prezzo scelto',
+    st.teams['team-2'].roster.A.some((e) => e.playerId === pA.id && e.price === 90) &&
+    st.teams['team-2'].budget === budget0 - 90 && ledgerOk(st),
+    `budget=${st.teams['team-2'].budget}`);
+
+  admin.emit('admin:updateAssignment', { playerId: pA.id, price: 40 });
+  await waitFor(adminBox, (s) => s.players.find((p) => p.id === pA.id)?.soldPrice === 40, 4000, 'price edit');
+  st = adminBox.state;
+  check('Modifica del prezzo: budget ricalcolato di conseguenza',
+    st.teams['team-2'].budget === budget0 - 40 &&
+    st.teams['team-2'].roster.A.find((e) => e.playerId === pA.id).price === 40 && ledgerOk(st),
+    `budget=${st.teams['team-2'].budget}`);
+
+  admin.emit('admin:updateAssignment', { playerId: pA.id, teamId: 'team-6' });
+  await waitFor(adminBox, (s) => s.players.find((p) => p.id === pA.id)?.soldTo === 'team-6', 4000, 'move team');
+  st = adminBox.state;
+  check('Spostamento ad altra squadra: budget di entrambe corretti',
+    st.teams['team-2'].budget === budget0 &&
+    st.teams['team-2'].roster.A.length === 0 &&
+    st.teams['team-6'].budget === budget0 - 40 &&
+    st.teams['team-6'].roster.A.some((e) => e.playerId === pA.id) && ledgerOk(st));
+
+  admin.emit('admin:removeAssignment', { playerId: pA.id });
+  await waitFor(adminBox, (s) => s.players.find((p) => p.id === pA.id)?.status === 'available', 4000, 'release');
+  st = adminBox.state;
+  check('Rimozione: crediti restituiti e giocatore di nuovo disponibile',
+    st.teams['team-6'].budget === budget0 &&
+    st.teams['team-6'].roster.A.length === 0 &&
+    st.players.find((p) => p.id === pA.id).soldTo === null && ledgerOk(st));
+
+  const pB = adminBox.state.players.find((p) => p.status === 'available' && p.ruolo === 'D');
+  boxes[0].errors.length = 0;
+  adminBox.errors.length = 0;
+  admin.emit('admin:addAssignment', { playerId: pB.id, teamId: 'team-3', price: 99999 });
+  await sleep(500);
+  st = adminBox.state;
+  check('Assegnazione oltre il budget rifiutata (stato invariato)',
+    adminBox.errors.some((e) => /budget/i.test(e.message)) &&
+    st.players.find((p) => p.id === pB.id).status === 'available' &&
+    st.teams['team-3'].budget === budget0 && ledgerOk(st));
+
+  admin.emit('admin:addAssignment', { playerId: pB.id, teamId: 'team-3', price: 10 });
+  await waitFor(adminBox, (s) => s.players.find((p) => p.id === pB.id)?.status === 'sold', 4000, 'add pB');
+  adminBox.errors.length = 0;
+  admin.emit('admin:addAssignment', { playerId: pB.id, teamId: 'team-4', price: 10 });
+  await sleep(500);
+  st = adminBox.state;
+  check('Doppia assegnazione dello stesso giocatore rifiutata',
+    adminBox.errors.some((e) => /già assegnato/i.test(e.message)) &&
+    st.history.filter((h) => h.playerId === pB.id).length === 1 && ledgerOk(st));
+
+  // filling a role beyond its slots must be refused
+  const slotsP = adminBox.state.config.slots.P;
+  const freeKeepers = adminBox.state.players.filter((p) => p.status === 'available' && p.ruolo === 'P').slice(0, slotsP + 1);
+  for (let i = 0; i < slotsP; i++) {
+    admin.emit('admin:addAssignment', { playerId: freeKeepers[i].id, teamId: 'team-9', price: 1 });
+    await sleep(150);
+  }
+  await waitFor(adminBox, (s) => s.teams['team-9'].roster.P.length === slotsP, 4000, 'fill keepers');
+  adminBox.errors.length = 0;
+  admin.emit('admin:addAssignment', { playerId: freeKeepers[slotsP].id, teamId: 'team-9', price: 1 });
+  await sleep(500);
+  st = adminBox.state;
+  check('Aggiunta oltre gli slot del reparto rifiutata',
+    adminBox.errors.some((e) => /reparto/i.test(e.message)) &&
+    st.teams['team-9'].roster.P.length === slotsP && ledgerOk(st));
+
+  // ---------------------------------------------------------------
+  console.log('\n[F] Integrità finale');
   // ---------------------------------------------------------------
 
   check('Il server è ancora vivo dopo tutti gli stress test', server.exitCode === null && !server.killed);
@@ -351,7 +430,7 @@ async function main() {
   const probeBox = track(probe);
   await sleep(700);
   check('Un nuovo client riceve regolarmente lo stato aggiornato',
-    probeBox.state != null && probeBox.state.phase === 'lobby');
+    probeBox.state != null && probeBox.state.phase === adminBox.state.phase && ledgerOk(probeBox.state));
   probe.disconnect();
 
   // ---------------------------------------------------------------

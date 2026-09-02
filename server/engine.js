@@ -38,6 +38,8 @@ export class AuctionEngine {
     if (!this.state.fasceSources) this.state.fasceSources = [];
     // never resume mid-countdown across a restart; require admin to resume it
     if (this.state.currentAuction) this.state.currentAuction.timerEndsAt = null;
+    // rebuild derived data from history so a restored state can never be stale
+    this._rebuildFromHistory();
     this._persist();
     setInterval(() => this._tick(), 250);
   }
@@ -110,7 +112,7 @@ export class AuctionEngine {
     if (timerSeconds) this.state.config.timerSeconds = timerSeconds;
     if (softCloseSeconds) this.state.config.softCloseSeconds = softCloseSeconds;
     if (minIncrement) this.state.config.minIncrement = minIncrement;
-    for (const t of Object.values(this.state.teams)) t.budget = this.state.config.budget;
+    this._rebuildFromHistory();
     this._persist();
     return { ok: true };
   }
@@ -192,22 +194,138 @@ export class AuctionEngine {
   }
 
   adminUndoLast() {
-    const last = this.state.history.pop();
+    const last = this.state.history[this.state.history.length - 1];
     if (!last) return { ok: false, error: 'Nessuna assegnazione da annullare.' };
-    const player = this.state.players.find((p) => p.id === last.playerId);
-    const team = this.state.teams[last.teamId];
-    if (player) {
-      player.status = 'available';
-      player.soldTo = null;
-      player.soldPrice = null;
-    }
-    if (team) {
-      team.budget += last.price;
-      team.roster[last.role] = team.roster[last.role].filter((p) => p.playerId !== last.playerId);
-      this._pushLog(`Annullata l'assegnazione di ${last.playerName} a ${team.name}.`);
-    }
+    this.state.history.pop();
+    this._rebuildFromHistory();
+    this._pushLog(`Annullata l'assegnazione di ${last.playerName} a ${this.state.teams[last.teamId]?.name || '—'}.`);
     this._persist();
     return { ok: true };
+  }
+
+  // ---- roster management (admin) ----
+  //
+  // `history` is the single source of truth for who owns what and for how
+  // much. Every roster edit just rewrites history and lets everything else -
+  // budgets, rosters, player status, end-of-auction - be recomputed from it,
+  // so the state can never drift out of sync.
+
+  _rebuildFromHistory() {
+    for (const t of Object.values(this.state.teams)) {
+      t.budget = this.state.config.budget;
+      t.roster = { P: [], D: [], C: [], A: [] };
+    }
+    for (const p of this.state.players) {
+      p.status = 'available';
+      p.soldTo = null;
+      p.soldPrice = null;
+    }
+    for (const h of this.state.history) {
+      const team = this.state.teams[h.teamId];
+      const player = this.state.players.find((p) => p.id === h.playerId);
+      if (!team || !player) continue;
+      team.budget -= h.price;
+      team.roster[player.ruolo].push({ playerId: player.id, name: player.nome, price: h.price });
+      player.status = 'sold';
+      player.soldTo = team.id;
+      player.soldPrice = h.price;
+    }
+    if (this.state.phase !== 'lobby') {
+      const allFull = Object.values(this.state.teams).every((t) => this.teamIsFull(t));
+      if (allFull && this.state.phase !== 'finished') {
+        this.state.phase = 'finished';
+        this._pushLog('Tutte le rose sono complete. Asta terminata!');
+      } else if (!allFull && this.state.phase === 'finished') {
+        this.state.phase = 'live';
+      }
+    }
+  }
+
+  // Dry-run a candidate history and refuse it if it would break an invariant.
+  _validateHistory(history) {
+    const budgets = {};
+    const counts = {};
+    for (const t of Object.values(this.state.teams)) {
+      budgets[t.id] = this.state.config.budget;
+      counts[t.id] = { P: 0, D: 0, C: 0, A: 0 };
+    }
+    const seen = new Set();
+    for (const h of history) {
+      const team = this.state.teams[h.teamId];
+      const player = this.state.players.find((p) => p.id === h.playerId);
+      if (!team) return { ok: false, error: 'Squadra inesistente.' };
+      if (!player) return { ok: false, error: 'Giocatore inesistente.' };
+      if (seen.has(h.playerId)) return { ok: false, error: `${player.nome} risulterebbe assegnato due volte.` };
+      seen.add(h.playerId);
+      if (!Number.isFinite(h.price) || h.price < 0) return { ok: false, error: 'Prezzo non valido.' };
+      budgets[team.id] -= h.price;
+      counts[team.id][player.ruolo]++;
+      if (budgets[team.id] < 0) {
+        return { ok: false, error: `Budget insufficiente per ${team.name}.` };
+      }
+      if (counts[team.id][player.ruolo] > this.state.config.slots[player.ruolo]) {
+        return { ok: false, error: `Reparto ${player.ruolo} già completo per ${team.name}.` };
+      }
+    }
+    return { ok: true };
+  }
+
+  _commitHistory(candidate, logMessage) {
+    const check = this._validateHistory(candidate);
+    if (!check.ok) return check;
+    this.state.history = candidate;
+    this._rebuildFromHistory();
+    if (logMessage) this._pushLog(logMessage);
+    this._persist();
+    return { ok: true };
+  }
+
+  adminAddAssignment(playerId, teamId, price) {
+    const player = this.state.players.find((p) => p.id === playerId);
+    const team = this.state.teams[teamId];
+    if (!player) return { ok: false, error: 'Giocatore non trovato.' };
+    if (!team) return { ok: false, error: 'Squadra non trovata.' };
+    if (this.state.currentAuction?.playerId === playerId) {
+      return { ok: false, error: 'Questo giocatore è in asta in questo momento.' };
+    }
+    if (this.state.history.some((h) => h.playerId === playerId)) {
+      return { ok: false, error: `${player.nome} è già assegnato a una squadra.` };
+    }
+    const candidate = [
+      ...this.state.history,
+      {
+        playerId, playerName: player.nome, role: player.ruolo,
+        teamId, teamName: team.name, price: Number(price), ts: Date.now(), manual: true,
+      },
+    ];
+    return this._commitHistory(candidate, `${player.nome} assegnato manualmente a ${team.name} per ${price} crediti.`);
+  }
+
+  adminRemoveAssignment(playerId) {
+    const entry = this.state.history.find((h) => h.playerId === playerId);
+    if (!entry) return { ok: false, error: 'Questo giocatore non è assegnato a nessuno.' };
+    const candidate = this.state.history.filter((h) => h.playerId !== playerId);
+    const teamName = this.state.teams[entry.teamId]?.name || '—';
+    return this._commitHistory(candidate, `${entry.playerName} rimosso da ${teamName} (${entry.price} crediti restituiti).`);
+  }
+
+  adminUpdateAssignment(playerId, { teamId, price }) {
+    const entry = this.state.history.find((h) => h.playerId === playerId);
+    if (!entry) return { ok: false, error: 'Questo giocatore non è assegnato a nessuno.' };
+    const newTeamId = teamId || entry.teamId;
+    const newTeam = this.state.teams[newTeamId];
+    if (!newTeam) return { ok: false, error: 'Squadra non trovata.' };
+    const newPrice = price == null ? entry.price : Number(price);
+    const candidate = this.state.history.map((h) =>
+      h.playerId === playerId
+        ? { ...h, teamId: newTeamId, teamName: newTeam.name, price: newPrice, manual: true }
+        : h
+    );
+    const changes = [];
+    if (newTeamId !== entry.teamId) changes.push(`spostato a ${newTeam.name}`);
+    if (newPrice !== entry.price) changes.push(`prezzo ${entry.price} → ${newPrice}`);
+    if (changes.length === 0) return { ok: true };
+    return this._commitHistory(candidate, `${entry.playerName}: ${changes.join(', ')}.`);
   }
 
   // Nominate and finalize in one step, without a live bidding round (e.g. to
@@ -323,12 +441,6 @@ export class AuctionEngine {
     const team = this.state.teams[ca.currentBidderTeamId];
     const price = Math.max(1, ca.currentBid);
 
-    player.status = 'sold';
-    player.soldTo = team.id;
-    player.soldPrice = price;
-    team.budget -= price;
-    team.roster[player.ruolo].push({ playerId: player.id, name: player.nome, price });
-
     this.state.history.push({
       playerId: player.id,
       playerName: player.nome,
@@ -338,13 +450,9 @@ export class AuctionEngine {
       price,
       ts: Date.now(),
     });
+    this._rebuildFromHistory();
     this._pushLog(`${player.nome} assegnato a ${team.name} per ${price} crediti.`);
     this.state.currentAuction = null;
-
-    if (Object.values(this.state.teams).every((t) => this.teamIsFull(t))) {
-      this.state.phase = 'finished';
-      this._pushLog('Tutte le rose sono complete. Asta terminata!');
-    }
     this._persist();
     return { ok: true };
   }

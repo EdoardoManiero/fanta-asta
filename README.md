@@ -37,6 +37,12 @@ scritta da zero con lo stesso scopo: gestire l'asta al posto del foglio Excel.
   per nome e ruolo.
 - Se un client si disconnette/aggiorna la pagina, ritrova automaticamente la propria
   squadra (l'identità è salvata nel browser).
+- **Gestione rose (admin)**: dal pannello Admin puoi correggere qualsiasi cosa a mano —
+  aggiungere un giocatore a una squadra al prezzo che vuoi, cambiare il prezzo pagato,
+  spostare un giocatore a un'altra squadra o rimuoverlo restituendo i crediti. Budget,
+  rose, disponibilità del giocatore e fine asta si aggiornano automaticamente, e le
+  operazioni che romperebbero le regole (budget insufficiente, reparto pieno, doppia
+  assegnazione) vengono rifiutate.
 - Click su un giocatore (in "Giocatori", "Fasce Giocatori" o sul tavolo dell'asta)
   apre la scheda completa: statistiche stagione scorsa (presenze, minuti, MV/FMV,
   gol, assist, ammonizioni...), note di scouting e, se presente, la stellina ★ che
@@ -76,7 +82,7 @@ PASS/FAIL con il dettaglio di eventuali anomalie.
 node server/scripts/test-resilience.mjs
 ```
 
-Verifica 23 scenari che *non devono* rompere l'asta, tra cui:
+Verifica 30 scenari che *non devono* rompere l'asta, tra cui:
 
 - **Connessione instabile**: chi cade mentre è in testa vince comunque il
   giocatore; alla riconnessione ritrova la sua squadra e risulta di nuovo
@@ -87,6 +93,9 @@ Verifica 23 scenari che *non devono* rompere l'asta, tra cui:
 - **Concorrenza**: due admin che chiamano insieme, raffica di offerte a cavallo
   della scadenza del timer (un solo vincitore, contabilità coerente), reset
   mentre volano le offerte.
+- **Gestione rose**: aggiunta/modifica prezzo/spostamento/rimozione con ricalcolo di
+  budget e contabilità, e rifiuto di budget insufficiente, reparto pieno e doppia
+  assegnazione.
 - **Validazione**: codice admin errato, azioni admin da non-admin, occupare o
   rinominare la squadra altrui, offerte sotto il minimo/oltre budget/oltre la
   regola della riserva, offerte senza giocatore sul tavolo.

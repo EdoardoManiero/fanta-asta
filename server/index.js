@@ -85,6 +85,12 @@ io.on('connection', (socket) => {
   socket.on('admin:forceAssign', requireAdmin(({ teamId, price }) => respond(socket, 'admin:forceAssign', engine.adminForceAssign(teamId, Number(price)))));
   socket.on('admin:quickAssign', requireAdmin(({ playerId, teamId, price }) => respond(socket, 'admin:quickAssign', engine.adminQuickAssign(playerId, teamId, Number(price)))));
   socket.on('admin:reset', requireAdmin(() => respond(socket, 'admin:reset', engine.adminReset())));
+  socket.on('admin:addAssignment', requireAdmin(({ playerId, teamId, price }) =>
+    respond(socket, 'admin:addAssignment', engine.adminAddAssignment(playerId, teamId, Number(price)))));
+  socket.on('admin:removeAssignment', requireAdmin(({ playerId }) =>
+    respond(socket, 'admin:removeAssignment', engine.adminRemoveAssignment(playerId))));
+  socket.on('admin:updateAssignment', requireAdmin(({ playerId, teamId, price }) =>
+    respond(socket, 'admin:updateAssignment', engine.adminUpdateAssignment(playerId, { teamId, price }))));
   socket.on('admin:removeFasceSource', requireAdmin(({ id }) => respond(socket, 'admin:removeFasceSource', engine.removeFasceSource(id))));
 
   socket.on('disconnect', () => {

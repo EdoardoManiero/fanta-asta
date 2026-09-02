@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ROLE_ORDER } from '../format.js';
+import RosterManager from './RosterManager.jsx';
 
 export default function AdminPanel({ state, socket, isAdmin, onAuth }) {
   const [passcode, setPasscode] = useState('');
@@ -134,11 +135,16 @@ export default function AdminPanel({ state, socket, isAdmin, onAuth }) {
               Reset asta
             </button>
           </div>
+
+          <RosterManager state={state} socket={socket} />
         </>
       )}
 
       {state.phase === 'finished' && (
-        <div className="text-emerald-300 text-sm">Asta terminata: tutte le rose sono complete.</div>
+        <>
+          <div className="text-emerald-300 text-sm">Asta terminata: tutte le rose sono complete.</div>
+          <RosterManager state={state} socket={socket} />
+        </>
       )}
     </div>
   );
