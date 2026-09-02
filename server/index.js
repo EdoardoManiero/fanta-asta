@@ -8,7 +8,7 @@ import { AuctionEngine } from './engine.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 4000;
-const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || 'carmy2627';
+const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || 'cambiami';
 
 const app = express();
 app.use(cors());

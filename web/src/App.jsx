@@ -68,7 +68,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-pitch-950 text-emerald-50">
       <header className="border-b border-emerald-900 px-4 sm:px-8 py-3 flex items-center gap-4 sticky top-0 bg-pitch-950/95 backdrop-blur z-10">
-        <div className="font-black tracking-tight text-lg">⚽ Asta Carmy Classic 26/27</div>
+        <div className="font-black tracking-tight text-lg">⚽ Asta Classic</div>
         <div className="ml-auto flex items-center gap-3 text-sm">
           <span className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400' : 'bg-rose-500'}`} />
           {myTeam ? (

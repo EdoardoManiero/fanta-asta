@@ -1,7 +1,7 @@
-# Asta Carmy Classic 26/27
+# Asta Classic
 
 Tool per fare l'asta del fantacalcio online con i tuoi amici, in tempo reale, usando
-i dati del tuo file `Carmy Classic 26_27.xlsx` (già convertiti in `server/data/players.json`,
+i dati del tuo foglio Excel di quotazioni (già convertiti in `server/data/players.json`,
 532 giocatori su 4 ruoli).
 
 Non è una copia del codice di FantaLab (non ci ho accesso e non lo replico) — è un'app
