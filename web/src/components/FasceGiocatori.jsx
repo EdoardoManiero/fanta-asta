@@ -20,6 +20,7 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
   }, [state.players, role, query]);
 
   const sources = state.fasceSources || [];
+  const isGk = role === 'P';
 
   const handleUpload = async () => {
     const file = fileRef.current?.files?.[0];
@@ -131,6 +132,24 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
               {sources.map((s) => (
                 <th key={s.id} className="p-2 text-left whitespace-nowrap">{s.label}</th>
               ))}
+              <th className="p-2 text-left">Quot.</th>
+              <th className="p-2 text-left">Consigl.</th>
+              <th className="p-2 text-left" title="Titolarità">Tit.</th>
+              <th className="p-2 text-left" title="Affidabilità">Affid.</th>
+              <th className="p-2 text-left">FMV</th>
+              <th className="p-2 text-left">Pres.</th>
+              {isGk ? (
+                <>
+                  <th className="p-2 text-left">Gol sub.</th>
+                  <th className="p-2 text-left">Rig. par.</th>
+                </>
+              ) : (
+                <>
+                  <th className="p-2 text-left">Gol</th>
+                  <th className="p-2 text-left">Assist</th>
+                </>
+              )}
+              <th className="p-2 text-left">Stato</th>
             </tr>
           </thead>
           <tbody>
@@ -150,6 +169,32 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
                 {sources.map((s) => (
                   <td key={s.id} className="p-2 text-emerald-200/70">{s.values[p.id] || '—'}</td>
                 ))}
+                <td className="p-2 font-mono">{p.quotazione}</td>
+                <td className="p-2 font-mono">{p.prezzoConsigliato}</td>
+                <td className="p-2">{p.titolarita}</td>
+                <td className="p-2">{p.affidabilita}</td>
+                <td className="p-2 font-mono">{p.fmv}</td>
+                <td className="p-2">{p.presenze}</td>
+                {isGk ? (
+                  <>
+                    <td className="p-2">{p.golSubiti}</td>
+                    <td className="p-2">{p.rigParati}</td>
+                  </>
+                ) : (
+                  <>
+                    <td className="p-2">{p.gol}</td>
+                    <td className="p-2">{p.assist}</td>
+                  </>
+                )}
+                <td className="p-2 whitespace-nowrap">
+                  {p.status === 'available' ? (
+                    <span className="text-emerald-400">libero</span>
+                  ) : (
+                    <span className="text-emerald-200/50">
+                      {state.teams[p.soldTo]?.name} · {p.soldPrice}
+                    </span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

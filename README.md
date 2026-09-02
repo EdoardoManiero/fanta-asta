@@ -34,7 +34,9 @@ scritta da zero con lo stesso scopo: gestire l'asta al posto del foglio Excel.
   dal tuo Excel originale. Da qui l'Admin può anche **caricare altri file Excel con lo
   stesso formato** (colonne Ruolo/Nome/Squadra/Fascia) per confrontare le fasce di
   altre fonti/esperti fianco a fianco — i giocatori vengono abbinati automaticamente
-  per nome e ruolo.
+  per nome e ruolo. La tabella mostra anche quotazione, prezzo consigliato, titolarità,
+  affidabilità, FMV, presenze e gol/assist (per i portieri: gol subiti e rigori parati)
+  direttamente in linea, senza dover aprire la scheda.
 - Se un client si disconnette/aggiorna la pagina, ritrova automaticamente la propria
   squadra (l'identità è salvata nel browser).
 - **Gestione rose (admin)**: dal pannello Admin puoi correggere qualsiasi cosa a mano —
