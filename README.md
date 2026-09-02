@@ -51,7 +51,7 @@ la sincronizzazione in tempo reale) e non richiede carta di credito.
    `ADMIN_PASSCODE`: scegli una password segreta (sarai tu solo a doverla usare
    per sbloccare il pannello Admin) e impostala lì.
 4. Deploy → dopo 2-3 minuti ottieni un URL pubblico tipo
-   `https://asta-carmy-classic.onrender.com`. Mandalo ai tuoi 10 amici.
+   `https://asta-classic.onrender.com`. Mandalo ai tuoi 10 amici.
 
 **Nota sul piano gratuito**: l'istanza gratuita si "addormenta" dopo ~15 minuti senza
 traffico e, quando si riavvia, riparte da zero (i dati dell'asta in corso non sono

@@ -7,7 +7,7 @@
 # type if you want the state to survive a restart.
 services:
   - type: web
-    name: asta-carmy-classic
+    name: asta-classic
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
