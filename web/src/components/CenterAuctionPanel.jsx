@@ -209,14 +209,32 @@ function OnTheBlock({ state, myTeam, socket, onSelectPlayer }) {
         </div>
       </div>
 
-      {myTeam ? (
-        canBid ? (
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <button onClick={() => placeBid(minBid)} className="rounded-lg bg-emerald-500 text-pitch-950 font-bold px-4 py-2.5 hover:bg-emerald-400">
-              Offri {minBid}
+      {/* Fixed action bar: the raise buttons must stay reachable at all times
+          during a live auction, however far the stats below are scrolled.
+          (A sticky bar inside the card unsticks once the card scrolls past.) */}
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-pitch-950/95 backdrop-blur border-t border-emerald-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm text-emerald-200/60 mr-1">
+              <span className="font-semibold text-emerald-100">{player.nome}</span>
+              {' · '}offerta <span className="font-mono text-emerald-300">{ca.currentBid || 0}</span>
+              {currentBidder ? ` · ${currentBidder.name}` : ''}
+            </span>
+            <button
+              onClick={() => placeBid(minBid)}
+              disabled={!canBid}
+              title={!myTeam ? 'Entra in una squadra per offrire' : (!canBid ? `Reparto ${player.ruolo} già completo` : '')}
+              className="rounded-lg bg-emerald-500 text-pitch-950 font-bold px-4 py-2 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              +{state.config.minIncrement} → {minBid}
             </button>
             {[5, 10, 25].map((inc) => (
-              <button key={inc} onClick={() => placeBid(ca.currentBid + inc)} className="rounded-lg border border-emerald-700 px-3 py-2.5 text-sm hover:border-emerald-400">
+              <button
+                key={inc}
+                onClick={() => placeBid(ca.currentBid + inc)}
+                disabled={!canBid}
+                className="rounded-lg border border-emerald-700 px-3 py-2 text-sm hover:border-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
                 +{inc}
               </button>
             ))}
@@ -224,21 +242,37 @@ function OnTheBlock({ state, myTeam, socket, onSelectPlayer }) {
               value={customAmount}
               onChange={(e) => setCustomAmount(e.target.value.replace(/\D/g, ''))}
               placeholder="importo"
-              className="w-24 rounded-lg bg-pitch-950 border border-emerald-900 px-2 py-2.5 text-sm outline-none focus:border-emerald-500"
+              disabled={!canBid}
+              className="w-24 rounded-lg bg-pitch-900 border border-emerald-900 px-2 py-2 text-sm outline-none focus:border-emerald-500 disabled:opacity-40"
             />
-            <button onClick={() => customAmount && placeBid(Number(customAmount))} className="rounded-lg border border-emerald-700 px-3 py-2.5 text-sm hover:border-emerald-400">
+            <button
+              onClick={() => customAmount && placeBid(Number(customAmount))}
+              disabled={!canBid}
+              className="rounded-lg border border-emerald-700 px-3 py-2 text-sm hover:border-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               Offri importo
             </button>
-            <div className="ml-auto text-sm text-emerald-200/60">
-              Budget {myTeam.name}: <span className="font-semibold text-emerald-200">{myTeam.budget}</span>
+            <div className="ml-auto flex items-center gap-3">
+              {myTeam && (
+                <span className="text-sm text-emerald-200/60">
+                  Budget: <span className="font-semibold text-emerald-200">{myTeam.budget}</span>
+                </span>
+              )}
+              <span className={`font-mono font-bold text-lg ${msLeft != null && msLeft < 5000 ? 'text-rose-400' : 'text-emerald-200/70'}`}>
+                {ca.timerEndsAt ? fmtSecs(msLeft) : '—'}
+              </span>
             </div>
           </div>
-        ) : (
-          <div className="mt-5 text-sm text-amber-300/80">Reparto {player.ruolo} già completo per la tua squadra: non puoi offrire.</div>
-        )
-      ) : (
-        <div className="mt-5 text-sm text-emerald-200/50">Entra in una squadra per poter offrire.</div>
-      )}
+          {!myTeam && (
+            <div className="text-xs text-emerald-200/50 pt-1">Entra in una squadra per poter offrire.</div>
+          )}
+          {myTeam && !canBid && (
+            <div className="text-xs text-amber-300/80 pt-1">
+              Reparto {player.ruolo} già completo per la tua squadra: non puoi offrire.
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="mt-5 border-t border-emerald-900/60 pt-4">
         <button

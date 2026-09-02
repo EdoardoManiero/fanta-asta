@@ -106,7 +106,7 @@ export default function App() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6">
+      <main className={`max-w-7xl mx-auto px-4 sm:px-8 py-6 ${state.currentAuction ? 'pb-32' : ''}`}>
         {!myTeam && state.phase !== 'finished' && <Join state={state} onClaim={handleClaim} />}
 
         {(myTeam || state.phase === 'finished') && (
@@ -175,7 +175,11 @@ export default function App() {
 
       <PlayerDetailModal
         player={selectedPlayer}
+        players={state.players}
+        teams={state.teams}
         teamName={selectedPlayerTeamName}
+        isAdmin={isAdmin}
+        socket={socketRef.current}
         onClose={() => setSelectedPlayerId(null)}
       />
     </div>

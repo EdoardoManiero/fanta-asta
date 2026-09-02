@@ -123,11 +123,15 @@ export default function AdminPanel({ state, socket, isAdmin, onAuth }) {
             </div>
           )}
 
-          <div className="flex gap-2 border-t border-amber-700/30 pt-3">
+          <div className="flex gap-2 border-t border-amber-700/30 pt-3 flex-wrap items-center">
             <button onClick={() => socket.emit('admin:undoLast')}
               className="rounded-lg border border-emerald-700 px-3 py-1.5 text-sm hover:border-emerald-400">
               Annulla ultima assegnazione
             </button>
+            <span className="text-xs text-emerald-200/40">
+              (scorciatoia: per rimuovere o modificare <b>qualsiasi</b> giocatore, usa "Gestione rose"
+              qui sotto oppure clicca il giocatore in "Giocatori"/"Fasce Giocatori")
+            </span>
             <button
               onClick={() => { if (confirm('Azzerare completamente l\'asta? Questa azione non si può annullare.')) socket.emit('admin:reset'); }}
               className="rounded-lg border border-rose-700 text-rose-300 px-3 py-1.5 text-sm hover:border-rose-400 ml-auto"

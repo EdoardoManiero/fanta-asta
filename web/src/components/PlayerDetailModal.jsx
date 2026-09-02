@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import PlayerAvatar from './PlayerAvatar.jsx';
-import { ROLE_LABELS } from '../format.js';
+import StatHeatmap, { heatmapKeys } from './StatHeatmap.jsx';
+import { ROLE_LABELS, isTarget } from '../format.js';
 
 function Dots({ value }) {
   return (
@@ -11,6 +13,25 @@ function Dots({ value }) {
   );
 }
 
+const ALL = ['P', 'D', 'C', 'A'];
+const OUT = ['D', 'C', 'A'];
+const ALL_STATS = [
+  { key: 'presenze', label: 'Presenze', roles: ALL },
+  { key: 'minuti', label: 'Minuti', roles: ALL },
+  { key: 'mv', label: 'MV', roles: ALL },
+  { key: 'fmv', label: 'FMV', roles: ALL },
+  { key: 'fmvExp', label: 'FMV Exp.', roles: ALL },
+  { key: 'puntiTitolare', label: 'Pt. Titolare', roles: ALL },
+  { key: 'gol', label: 'Gol', roles: OUT },
+  { key: 'assist', label: 'Assist', roles: OUT },
+  { key: 'ammonizioni', label: 'Ammonizioni', roles: ALL },
+  { key: 'espulsioni', label: 'Espulsioni', roles: ALL },
+  { key: 'rigSegnati', label: 'Rig. segnati', roles: OUT },
+  { key: 'rigSbagliati', label: 'Rig. sbagliati', roles: OUT },
+  { key: 'golSubiti', label: 'Gol subiti', roles: ['P'] },
+  { key: 'rigParati', label: 'Rig. parati', roles: ['P'] },
+];
+
 function Stat({ label, value }) {
   if (value === null || value === undefined || value === '') return null;
   return (
@@ -21,10 +42,29 @@ function Stat({ label, value }) {
   );
 }
 
-export default function PlayerDetailModal({ player, teamName, onClose }) {
+export default function PlayerDetailModal({ player, players, teams, teamName, isAdmin, socket, onClose }) {
+  const [editing, setEditing] = useState(false);
+  const [editTeam, setEditTeam] = useState('');
+  const [editPrice, setEditPrice] = useState('');
   if (!player) return null;
-  const isGk = player.ruolo === 'P';
-  const isTarget = player.obiettivo === 'Sí' || player.obiettivo === 'Si' || player.obiettivo === 'Sì';
+  const target = isTarget(player);
+  const assigned = player.status === 'sold';
+
+  const openEdit = () => {
+    setEditTeam(player.soldTo || '');
+    setEditPrice(String(player.soldPrice ?? ''));
+    setEditing(true);
+  };
+  const saveEdit = () => {
+    socket.emit('admin:updateAssignment', { playerId: player.id, teamId: editTeam, price: Number(editPrice) });
+    setEditing(false);
+  };
+  const remove = () => {
+    if (confirm(`Rimuovere ${player.nome} da ${teamName}? I ${player.soldPrice} crediti tornano nel budget.`)) {
+      socket.emit('admin:removeAssignment', { playerId: player.id });
+      onClose();
+    }
+  };
 
   return (
     <div
@@ -41,7 +81,7 @@ export default function PlayerDetailModal({ player, teamName, onClose }) {
             <div>
               <div className="text-xl font-bold flex items-center gap-2">
                 {player.nome}
-                {isTarget && <span title="Nel tuo mirino" className="text-amber-300">★</span>}
+                {target && <span title="Nel tuo mirino" className="text-amber-300">★</span>}
               </div>
               <div className="text-sm text-emerald-200/60">
                 {ROLE_LABELS[player.ruolo]} · {player.squadra} · Fascia {player.fascia}
@@ -51,9 +91,38 @@ export default function PlayerDetailModal({ player, teamName, onClose }) {
           <button onClick={onClose} className="text-emerald-200/50 hover:text-emerald-100 text-xl leading-none">✕</button>
         </div>
 
-        {player.status !== 'available' && (
-          <div className="mb-4 text-sm bg-emerald-500/10 border border-emerald-800 rounded-lg px-3 py-2 text-emerald-300">
-            Assegnato a {teamName || '—'} per {player.soldPrice} crediti.
+        {assigned && (
+          <div className="mb-4 bg-emerald-500/10 border border-emerald-800 rounded-lg px-3 py-2">
+            <div className="text-sm text-emerald-300">
+              Assegnato a {teamName || '—'} per {player.soldPrice} crediti.
+            </div>
+            {isAdmin && !editing && (
+              <div className="flex gap-2 mt-2">
+                <button onClick={openEdit}
+                  className="text-xs rounded-md border border-emerald-700 px-2 py-1 hover:border-emerald-400">
+                  Modifica squadra/prezzo
+                </button>
+                <button onClick={remove}
+                  className="text-xs rounded-md border border-rose-700 text-rose-300 px-2 py-1 hover:border-rose-400">
+                  Rimuovi dalla rosa
+                </button>
+              </div>
+            )}
+            {isAdmin && editing && (
+              <div className="flex flex-wrap gap-2 mt-2 items-center">
+                <select value={editTeam} onChange={(e) => setEditTeam(e.target.value)}
+                  className="bg-pitch-950 border border-emerald-900 rounded-md px-2 py-1 text-xs">
+                  {Object.values(teams || {}).map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <input value={editPrice} onChange={(e) => setEditPrice(e.target.value.replace(/\D/g, ''))}
+                  className="w-20 bg-pitch-950 border border-emerald-900 rounded-md px-2 py-1 text-xs font-mono" />
+                <button onClick={saveEdit}
+                  className="text-xs rounded-md bg-emerald-500 text-pitch-950 font-semibold px-2 py-1">Salva</button>
+                <button onClick={() => setEditing(false)} className="text-xs text-emerald-200/50 px-1">annulla</button>
+              </div>
+            )}
           </div>
         )}
 
@@ -70,22 +139,26 @@ export default function PlayerDetailModal({ player, teamName, onClose }) {
         </div>
 
         <div className="text-xs font-bold text-emerald-200/50 uppercase tracking-wide mb-2">Stagione scorsa</div>
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <Stat label="Presenze" value={player.presenze} />
-          <Stat label="Minuti" value={player.minuti} />
-          <Stat label="MV" value={player.mv} />
-          <Stat label="FMV" value={player.fmv} />
-          <Stat label="FMV Exp." value={player.fmvExp} />
-          <Stat label="Pt. Titolare" value={player.puntiTitolare} />
-          <Stat label="Gol" value={player.gol} />
-          <Stat label="Assist" value={player.assist} />
-          <Stat label="Ammonizioni" value={player.ammonizioni} />
-          <Stat label="Espulsioni" value={player.espulsioni} />
-          {!isGk && <Stat label="Rig. segnati" value={player.rigSegnati} />}
-          {!isGk && <Stat label="Rig. sbagliati" value={player.rigSbagliati} />}
-          {isGk && <Stat label="Gol subiti" value={player.golSubiti} />}
-          {isGk && <Stat label="Rig. parati" value={player.rigParati} />}
-        </div>
+        {players && (
+          <div className="mb-4">
+            <StatHeatmap player={player} players={players} />
+          </div>
+        )}
+        {/* only what the heat map above doesn't already rank, so no number is
+            printed twice; when the heat map can't run (no appearances) this
+            falls back to showing the full line. */}
+        {(() => {
+          const ranked = players && player.presenze ? new Set(heatmapKeys(player.ruolo)) : new Set();
+          const rows = ALL_STATS.filter((st) => !ranked.has(st.key) && st.roles.includes(player.ruolo));
+          if (rows.length === 0) return null;
+          return (
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {rows.map((st) => (
+                <Stat key={st.key} label={st.label} value={player[st.key]} />
+              ))}
+            </div>
+          );
+        })()}
 
         {player.note?.length > 0 && (
           <div className="mb-4">

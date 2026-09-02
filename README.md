@@ -39,7 +39,10 @@ scritta da zero con lo stesso scopo: gestire l'asta al posto del foglio Excel.
   squadra (l'identità è salvata nel browser).
 - **Gestione rose (admin)**: dal pannello Admin puoi correggere qualsiasi cosa a mano —
   aggiungere un giocatore a una squadra al prezzo che vuoi, cambiare il prezzo pagato,
-  spostare un giocatore a un'altra squadra o rimuoverlo restituendo i crediti. Budget,
+  spostare un giocatore a un'altra squadra o rimuoverlo restituendo i crediti. Vale per
+  **qualsiasi** giocatore già assegnato, non solo per l'ultimo: da "Gestione rose" nel
+  pannello Admin oppure cliccando il giocatore in "Giocatori"/"Fasce Giocatori"
+  ("Annulla ultima assegnazione" è solo una scorciatoia). Budget,
   rose, disponibilità del giocatore e fine asta si aggiornano automaticamente, e le
   operazioni che romperebbero le regole (budget insufficiente, reparto pieno, doppia
   assegnazione) vengono rifiutate.
@@ -56,6 +59,13 @@ scritta da zero con lo stesso scopo: gestire l'asta al posto del foglio Excel.
 - **Conferma a fine asta**: quando le offerte per un giocatore si chiudono, a tutti
   compare una finestra con foto, nome, squadra aggiudicataria e prezzo (evidenziata
   se l'hai vinto tu).
+- **Barra offerte sempre visibile**: durante un'asta live i pulsanti di rilancio
+  (+1, +5, +10, +25, importo libero) stanno in una barra fissa in fondo allo schermo,
+  con nome del giocatore, offerta corrente, budget e timer — restano raggiungibili
+  comunque tu abbia scrollato la pagina.
+- **La stessa scheda statistiche ovunque**: cliccando un giocatore in "Giocatori" o
+  "Fasce Giocatori" si apre la scheda completa con heat map, statistiche e note; se
+  sei admin, da lì puoi anche spostarlo di squadra, cambiargli il prezzo o rimuoverlo.
 - **Scheda del giocatore chiamato**: sotto i pulsanti di offerta trovi indici di
   titolarità/affidabilità/integrità, tutte le statistiche della stagione scorsa e una
   **heat map** che colora ogni statistica in base al percentile nel suo ruolo (il
