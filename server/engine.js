@@ -27,6 +27,7 @@ function freshState() {
     currentAuction: null, // { playerId, currentBid, currentBidderTeamId, timerEndsAt, log: [] }
     history: [], // { playerId, playerName, teamId, price, ts }
     log: [], // free-text event log for the admin/spectators
+    fasceSources: [], // [{ id, label, uploadedAt, matchedCount, unmatchedCount, values: { [playerId]: fascia } }]
   };
 }
 
@@ -34,6 +35,7 @@ export class AuctionEngine {
   constructor(onChange) {
     this.onChange = onChange || (() => {});
     this.state = loadState() || freshState();
+    if (!this.state.fasceSources) this.state.fasceSources = [];
     // never resume mid-countdown across a restart; require admin to resume it
     if (this.state.currentAuction) this.state.currentAuction.timerEndsAt = null;
     this._persist();
@@ -203,6 +205,15 @@ export class AuctionEngine {
     return { ok: true };
   }
 
+  // Nominate and finalize in one step, without a live bidding round (e.g. to
+  // fix a mistake or honor a pre-arranged deal).
+  adminQuickAssign(playerId, teamId, price) {
+    if (this.state.currentAuction) return { ok: false, error: "C'è già un giocatore sul tavolo." };
+    const nom = this.nominate(playerId);
+    if (!nom.ok) return nom;
+    return this.adminForceAssign(teamId, price);
+  }
+
   adminForceAssign(teamId, price) {
     if (!this.state.currentAuction) return { ok: false, error: 'Nessun giocatore sul tavolo.' };
     const check = this._validateBid(teamId, price, { ignoreCurrentBid: true });
@@ -215,6 +226,31 @@ export class AuctionEngine {
   adminReset() {
     this.state = freshState();
     this._pushLog('Asta azzerata.');
+    this._persist();
+    return { ok: true };
+  }
+
+  // ---- fasce sources ----
+
+  addFasceSource(label, matchResult) {
+    const source = {
+      id: `fasce-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      label: (label || 'Fonte').slice(0, 60),
+      uploadedAt: Date.now(),
+      matchedCount: matchResult.matchedCount,
+      unmatchedCount: matchResult.unmatchedCount,
+      values: matchResult.values,
+    };
+    this.state.fasceSources.push(source);
+    this._pushLog(`Caricate nuove fasce: "${source.label}" (${source.matchedCount} giocatori abbinati).`);
+    this._persist();
+    return { ok: true, source };
+  }
+
+  removeFasceSource(id) {
+    const before = this.state.fasceSources.length;
+    this.state.fasceSources = this.state.fasceSources.filter((s) => s.id !== id);
+    if (this.state.fasceSources.length === before) return { ok: false, error: 'Fonte non trovata.' };
     this._persist();
     return { ok: true };
   }

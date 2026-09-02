@@ -4,11 +4,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import multer from 'multer';
 import { AuctionEngine } from './engine.js';
+import { parseFasceWorkbook, matchFasceToPlayers } from './fasce.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 4000;
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || 'cambiami';
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 const app = express();
 app.use(cors());
@@ -77,11 +80,33 @@ io.on('connection', (socket) => {
   socket.on('admin:skip', requireAdmin(() => respond(socket, 'admin:skip', engine.adminSkip())));
   socket.on('admin:undoLast', requireAdmin(() => respond(socket, 'admin:undoLast', engine.adminUndoLast())));
   socket.on('admin:forceAssign', requireAdmin(({ teamId, price }) => respond(socket, 'admin:forceAssign', engine.adminForceAssign(teamId, Number(price)))));
+  socket.on('admin:quickAssign', requireAdmin(({ playerId, teamId, price }) => respond(socket, 'admin:quickAssign', engine.adminQuickAssign(playerId, teamId, Number(price)))));
   socket.on('admin:reset', requireAdmin(() => respond(socket, 'admin:reset', engine.adminReset())));
+  socket.on('admin:removeFasceSource', requireAdmin(({ id }) => respond(socket, 'admin:removeFasceSource', engine.removeFasceSource(id))));
 
   socket.on('disconnect', () => {
     if (clientId) engine.setConnected(clientId, false);
   });
+});
+
+app.post('/api/fasce/upload', upload.single('file'), (req, res) => {
+  if (req.headers['x-admin-passcode'] !== ADMIN_PASSCODE) {
+    return res.status(403).json({ error: "Codice admin errato." });
+  }
+  if (!req.file) return res.status(400).json({ error: 'Nessun file ricevuto.' });
+  try {
+    const rows = parseFasceWorkbook(req.file.buffer);
+    if (rows.length === 0) {
+      return res.status(400).json({ error: 'Nessuna riga valida trovata (servono colonne Ruolo/Nome/Fascia).' });
+    }
+    const matchResult = matchFasceToPlayers(rows, engine.getPublicState().players);
+    const label = (req.body.label || req.file.originalname || 'Fonte').toString();
+    const result = engine.addFasceSource(label, matchResult);
+    res.json(result);
+  } catch (err) {
+    console.error('Fasce upload failed', err);
+    res.status(400).json({ error: 'File non leggibile. Assicurati che sia un .xlsx valido.' });
+  }
 });
 
 const webDist = path.join(__dirname, '..', 'web', 'dist');

@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { createSocket, getClientId } from './socket.js';
 import Join from './components/Join.jsx';
-import CurrentAuction from './components/CurrentAuction.jsx';
-import TeamsBoard from './components/TeamsBoard.jsx';
+import TeamsSidebar from './components/TeamsSidebar.jsx';
+import CenterAuctionPanel from './components/CenterAuctionPanel.jsx';
+import InsightPanel from './components/InsightPanel.jsx';
+import BoardTab from './components/BoardTab.jsx';
 import PlayerDatabase from './components/PlayerDatabase.jsx';
+import FasceGiocatori from './components/FasceGiocatori.jsx';
 import EventLog from './components/EventLog.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
 
@@ -15,7 +18,7 @@ export default function App() {
   const [state, setState] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [toast, setToast] = useState(null);
-  const [tab, setTab] = useState('asta');
+  const [tab, setTab] = useState('rose');
 
   useEffect(() => {
     const socket = createSocket();
@@ -58,9 +61,9 @@ export default function App() {
   };
 
   const TABS = [
-    { key: 'asta', label: 'Asta' },
-    { key: 'rose', label: 'Rose' },
+    { key: 'rose', label: 'Rose Squadre' },
     { key: 'giocatori', label: 'Giocatori' },
+    { key: 'fasce', label: 'Fasce Giocatori' },
     { key: 'admin', label: 'Admin' },
     { key: 'log', label: 'Log' },
   ];
@@ -86,13 +89,17 @@ export default function App() {
         </div>
       )}
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-8 py-6">
-        {!myTeam && state.phase !== 'finished' && (
-          <Join state={state} onClaim={handleClaim} />
-        )}
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6">
+        {!myTeam && state.phase !== 'finished' && <Join state={state} onClaim={handleClaim} />}
 
         {(myTeam || state.phase === 'finished') && (
           <>
+            <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_300px] gap-4 mb-6">
+              <TeamsSidebar state={state} myTeamId={myTeam?.id} />
+              <CenterAuctionPanel state={state} myTeam={myTeam} isAdmin={isAdmin} socket={socketRef.current} />
+              <InsightPanel state={state} />
+            </div>
+
             <nav className="flex gap-1 mb-5 overflow-x-auto">
               {TABS.map((t) => (
                 <button
@@ -107,23 +114,14 @@ export default function App() {
               ))}
             </nav>
 
-            {tab === 'asta' && (
-              <div className="space-y-5">
-                {state.phase === 'lobby' && (
-                  <div className="rounded-xl border border-emerald-900 bg-pitch-900/50 p-6 text-emerald-200/70">
-                    In attesa che l'admin avvii l'asta dal pannello Admin.
-                  </div>
-                )}
-                {state.phase !== 'lobby' && (
-                  <CurrentAuction state={state} myTeam={myTeam} socket={socketRef.current} />
-                )}
-              </div>
-            )}
-
-            {tab === 'rose' && <TeamsBoard state={state} myTeamId={myTeam?.id} />}
+            {tab === 'rose' && <BoardTab state={state} myTeamId={myTeam?.id} />}
 
             {tab === 'giocatori' && (
               <PlayerDatabase state={state} isAdmin={isAdmin} onNominate={handleNominate} />
+            )}
+
+            {tab === 'fasce' && (
+              <FasceGiocatori state={state} isAdmin={isAdmin} socket={socketRef.current} />
             )}
 
             {tab === 'admin' && (

@@ -14,17 +14,27 @@ scritta da zero con lo stesso scopo: gestire l'asta al posto del foglio Excel.
   500 crediti, rose da 3 P / 8 D / 8 C / 6 A (25 giocatori a squadra).
 - Il tuo amico apre il link, clicca su una squadra libera, le dà un nome ed entra.
 - Tu (l'organizzatore) entri come una squadra qualsiasi e poi sblocchi il **pannello
-  Admin** con il codice admin (vedi sotto): da lì chiami i giocatori (a caso per
-  ruolo, o cercandoli per nome nella tab "Giocatori"), avvii il timer, e il sistema
-  assegna automaticamente il giocatore al miglior offerente allo scadere del tempo.
+  Admin** con il codice admin (vedi sotto). Il riquadro centrale in alto è il tuo
+  "tavolo di chiamata": filtra per ruolo o cerca un nome e premi "Chiama" (a caso se
+  non hai cercato nulla, altrimenti quel giocatore specifico) per metterlo all'asta,
+  oppure "Assegna" per darlo direttamente a una squadra a un prezzo fisso, senza asta
+  live (utile per correggere errori o accordi pre-asta). Il timer parte dal pannello
+  Admin e il sistema assegna automaticamente il giocatore al miglior offerente allo
+  scadere del tempo.
 - Timer con "soft-close": ogni nuova offerta negli ultimi 5 secondi allunga il
   countdown di altri 5 secondi, per evitare che qualcuno rubi il giocatore
   all'ultimo istante.
 - Regola della riserva: non puoi offrire più di quanto ti lascia almeno 1 credito
   per ogni slot di rosa ancora da riempire (la classica regola dell'asta al fantacalcio).
-- Tab "Rose": budget e rosa di tutte le squadre in tempo reale.
+- Tab "Rose Squadre": budget e rosa di tutte le squadre in tempo reale, con le
+  righe per ruolo espandibili/collassabili.
 - Tab "Giocatori": l'intero database, filtrabile per ruolo, cercabile per nome,
   ordinabile per ogni colonna (quotazione, prezzo consigliato, FMV, presenze, gol...).
+- Tab "Fasce Giocatori": mostra la fascia (Top/Semi-Top/...) di ogni giocatore presa
+  dal tuo Excel originale. Da qui l'Admin può anche **caricare altri file Excel con lo
+  stesso formato** (colonne Ruolo/Nome/Squadra/Fascia) per confrontare le fasce di
+  altre fonti/esperti fianco a fianco — i giocatori vengono abbinati automaticamente
+  per nome e ruolo.
 - Se un client si disconnette/aggiorna la pagina, ritrova automaticamente la propria
   squadra (l'identità è salvata nel browser).
 

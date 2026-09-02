@@ -80,30 +80,9 @@ export default function AdminPanel({ state, socket, isAdmin, onAuth }) {
 
       {state.phase === 'live' && (
         <>
-          <div>
-            <div className="text-sm text-emerald-200/70 mb-1.5">Chiama un giocatore a caso:</div>
-            <div className="flex gap-2 flex-wrap">
-              {ROLE_ORDER.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => socket.emit('admin:nominateRandom', { role: r })}
-                  disabled={!!state.currentAuction}
-                  className="rounded-lg border border-emerald-700 px-3 py-1.5 text-sm hover:border-emerald-400 disabled:opacity-30"
-                >
-                  {r} casuale
-                </button>
-              ))}
-              <button
-                onClick={() => socket.emit('admin:nominateRandom', {})}
-                disabled={!!state.currentAuction}
-                className="rounded-lg border border-emerald-700 px-3 py-1.5 text-sm hover:border-emerald-400 disabled:opacity-30"
-              >
-                qualsiasi
-              </button>
-            </div>
-            <div className="text-xs text-emerald-200/40 mt-1">
-              Oppure vai su "Giocatori" e clicca "Metti all'asta" su un nome specifico.
-            </div>
+          <div className="text-xs text-emerald-200/40">
+            Per chiamare il prossimo giocatore usa il pannello in alto (cerca il nome o lascia vuoto e premi
+            "Chiama a caso"). Qui sotto controlli per il giocatore già sul tavolo.
           </div>
 
           {state.currentAuction && (
