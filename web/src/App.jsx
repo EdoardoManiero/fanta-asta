@@ -56,7 +56,7 @@ export default function App() {
   }, []);
 
   if (!state) {
-    return <div className="min-h-screen flex items-center justify-center text-emerald-200/60">Connessione in corso...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-ink-3">Connessione in corso…</div>;
   }
 
   const myTeam = Object.values(state.teams).find((t) => t.ownerClientId === clientId) || null;
@@ -86,32 +86,34 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-pitch-950 text-emerald-50">
-      <header className="border-b border-emerald-900 px-4 sm:px-8 py-3 flex items-center gap-4 sticky top-0 bg-pitch-950/95 backdrop-blur z-10">
-        <div className="font-black tracking-tight text-lg">⚽ Asta Classic</div>
-        <div className="ml-auto flex items-center gap-3 text-sm">
-          <span className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400' : 'bg-rose-500'}`} />
-          {myTeam ? (
-            <span className="text-emerald-200/80">{myTeam.name}</span>
-          ) : (
-            <span className="text-emerald-200/40">spettatore</span>
-          )}
-          {isAdmin && <span className="text-amber-300 text-xs font-bold uppercase tracking-wide">Admin</span>}
+    <div className="min-h-screen bg-ground text-ink">
+      <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-line bg-ground px-4 py-3 sm:px-6">
+        <div className="font-display text-md font-bold tracking-tight">
+          Asta <span className="font-medium text-ink-3">Classic</span>
+        </div>
+        <div className="ml-auto flex items-center gap-3 text-xs">
+          {isAdmin && <span className="chip border-line-strong text-warn">Admin</span>}
+          <span className="text-ink-2">{myTeam ? myTeam.name : 'spettatore'}</span>
+          <span className="flex items-center gap-1.5 text-ink-3">
+            <span className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-free' : 'bg-danger'}`} />
+            {connected ? 'in linea' : 'disconnesso'}
+          </span>
         </div>
       </header>
 
       {toast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 bg-rose-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm">
-          {toast}
+        <div className="panel shadow-overlay fixed left-1/2 top-14 z-50 max-w-sm -translate-x-1/2 px-4 py-3">
+          <div className="label text-danger">Errore</div>
+          <div className="mt-0.5 text-sm text-ink">{toast}</div>
         </div>
       )}
 
-      <main className={`max-w-7xl mx-auto px-4 sm:px-8 py-6 ${state.currentAuction ? 'pb-32' : ''}`}>
+      <main className={`mx-auto max-w-shell px-4 py-6 sm:px-6 ${state.currentAuction ? 'pb-36' : ''}`}>
         {!myTeam && state.phase !== 'finished' && <Join state={state} onClaim={handleClaim} />}
 
         {(myTeam || state.phase === 'finished') && (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_300px] gap-4 mb-6">
+            <div className="mb-6 grid grid-cols-1 items-start gap-3 lg:grid-cols-[212px_1fr_284px]">
               <TeamsSidebar state={state} myTeamId={myTeam?.id} />
               <CenterAuctionPanel
                 state={state}
@@ -123,13 +125,15 @@ export default function App() {
               <InsightPanel state={state} />
             </div>
 
-            <nav className="flex gap-1 mb-5 overflow-x-auto">
+            <nav className="mb-6 flex gap-6 overflow-x-auto border-b border-line">
               {TABS.map((t) => (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
-                    tab === t.key ? 'bg-emerald-500 text-pitch-950' : 'text-emerald-200/60 hover:bg-pitch-900'
+                  className={`-mb-px whitespace-nowrap border-b-2 pb-2.5 text-sm font-medium transition-colors ${
+                    tab === t.key
+                      ? 'border-live text-ink'
+                      : 'border-transparent text-ink-3 hover:text-ink-2'
                   }`}
                 >
                   {t.label}

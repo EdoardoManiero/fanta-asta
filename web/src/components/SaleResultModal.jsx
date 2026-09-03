@@ -16,42 +16,40 @@ export default function SaleResultModal({ sale, player, isMine, onClose }) {
   if (!sale) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim p-4" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-pitch-900 border-2 rounded-2xl w-full max-w-sm p-6 text-center ${
-          isMine ? 'border-emerald-400' : 'border-emerald-800'
-        }`}
+        className={`panel shadow-overlay w-full max-w-sm p-6 ${isMine ? 'border-live' : ''}`}
       >
-        <div className="text-xs uppercase tracking-widest text-emerald-200/50 mb-3">Asta conclusa</div>
+        <div className="label">Asta conclusa</div>
 
-        <div className="flex justify-center mb-3">
+        <div className="mt-4 flex items-center gap-3">
           {player ? <PlayerAvatar player={player} size="lg" /> : null}
-        </div>
-
-        <div className="text-2xl font-bold">{sale.playerName}</div>
-        {player && (
-          <div className="text-sm text-emerald-200/60 mb-4">
-            {ROLE_LABELS[player.ruolo]} · {player.squadra}
+          <div className="min-w-0">
+            <div className="truncate font-display text-md font-semibold">{sale.playerName}</div>
+            {player && (
+              <div className="text-xs text-ink-3">
+                {ROLE_LABELS[player.ruolo]} · {player.squadra}
+              </div>
+            )}
           </div>
-        )}
-
-        <div className="bg-pitch-950/70 border border-emerald-900/60 rounded-xl p-4">
-          <div className="text-xs text-emerald-200/50 mb-1">Aggiudicato a</div>
-          <div className="text-lg font-semibold">{sale.teamName}</div>
-          <div className="text-3xl font-bold text-emerald-300 mt-2 font-mono">{sale.price}</div>
-          <div className="text-xs text-emerald-200/50">crediti</div>
         </div>
 
-        {isMine && (
-          <div className="mt-3 text-sm font-semibold text-emerald-300">È tuo! 🎉</div>
-        )}
+        <div className="panel-inset mt-4 flex items-end justify-between px-4 py-3">
+          <div>
+            <div className="label">Aggiudicato a</div>
+            <div className="mt-0.5 font-semibold text-ink">{sale.teamName}</div>
+          </div>
+          <div className="text-right">
+            <div className="label">Crediti</div>
+            <div className="num mt-0.5 text-xl font-semibold leading-none text-ink">{sale.price}</div>
+          </div>
+        </div>
 
-        <button
-          onClick={onClose}
-          className="mt-4 w-full rounded-lg bg-emerald-500 text-pitch-950 font-semibold py-2 hover:bg-emerald-400"
-        >
-          Ok
+        {isMine && <div className="mt-3 text-sm font-semibold text-free">Aggiudicato alla tua squadra.</div>}
+
+        <button onClick={onClose} className="btn btn-ghost mt-5 w-full">
+          Chiudi
         </button>
       </div>
     </div>

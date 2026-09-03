@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 
-// Sequential single-hue ramp (blue 600 -> 100), validated against this app's
-// dark surface (#0a1f14): monotone lightness, visible step gaps, dark end still
-// clears the surface. Each step is paired with the ink that reaches >= 4.5:1 on it,
-// so the number stays readable and colour is only a secondary encoding.
+// Sequential single-hue ramp (blue 600 -> 100), re-validated against this app's
+// warm graphite surface (#24211d): monotone lightness, visible step gaps, and the
+// dark end still separates from the surface (1.98:1). Each step is paired with the
+// ink that reaches >= 4.5:1 on it, so the number stays readable and colour is only
+// a secondary encoding. Blue is the one hue in the app with no semantic job, which
+// is exactly why the ranking scale gets it.
 const RAMP = [
   { bg: '#184f95', ink: '#ffffff' },
   { bg: '#256abf', ink: '#ffffff' },
@@ -70,7 +72,7 @@ export default function StatHeatmap({ player, players }) {
 
   if (!player.presenze) {
     return (
-      <div className="text-sm text-emerald-200/40">
+      <div className="text-sm text-ink-3">
         Nessun dato della stagione scorsa per questo giocatore (0 presenze).
       </div>
     );
@@ -78,7 +80,7 @@ export default function StatHeatmap({ player, players }) {
 
   return (
     <div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
         {cells.map((c) => {
           const idx = c.pct == null ? 0 : Math.min(RAMP.length - 1, Math.floor((c.pct / 100) * RAMP.length));
           const step = RAMP[idx];
@@ -86,28 +88,28 @@ export default function StatHeatmap({ player, players }) {
             <div
               key={c.key}
               style={{ backgroundColor: step.bg, color: step.ink }}
-              className="rounded-lg px-2.5 py-1.5"
+              className="rounded px-2.5 py-2"
               title={`${c.label}: ${c.value} — meglio del ${Math.round(c.pct)}% dei ${player.ruolo} con almeno 1 presenza`}
             >
-              <div className="text-[10px] uppercase tracking-wide opacity-80 truncate">{c.label}</div>
+              <div className="truncate text-2xs font-medium opacity-[0.92]">{c.label}</div>
               <div className="flex items-baseline justify-between gap-1">
-                <span className="text-sm font-bold font-mono">{c.value}</span>
-                <span className="text-[10px] font-mono opacity-80">{Math.round(c.pct)}°</span>
+                <span className="num text-sm font-semibold">{c.value}</span>
+                <span className="num text-2xs opacity-[0.92]">{Math.round(c.pct)}°</span>
               </div>
             </div>
           );
         })}
       </div>
 
-      <div className="flex items-center gap-2 mt-2 text-[10px] text-emerald-200/40">
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-2xs text-ink-3">
         <span>peggiore</span>
-        <div className="flex rounded overflow-hidden">
+        <div className="flex overflow-hidden rounded">
           {RAMP.map((s) => (
-            <span key={s.bg} style={{ backgroundColor: s.bg }} className="w-5 h-2.5" />
+            <span key={s.bg} style={{ backgroundColor: s.bg }} className="h-2.5 w-5" />
           ))}
         </div>
         <span>migliore</span>
-        <span className="ml-1">— percentile nel ruolo (il numero grande è il valore reale)</span>
+        <span>percentile nel ruolo; il numero grande è il valore reale</span>
       </div>
     </div>
   );

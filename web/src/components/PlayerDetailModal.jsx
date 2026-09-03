@@ -7,7 +7,7 @@ function Dots({ value }) {
   return (
     <span className="inline-flex gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} className={`w-2 h-2 rounded-full ${i < value ? 'bg-emerald-400' : 'bg-emerald-900'}`} />
+        <span key={i} className={`h-1.5 w-1.5 rounded-full ${i < value ? 'bg-ink' : 'bg-line-strong'}`} />
       ))}
     </span>
   );
@@ -35,9 +35,9 @@ const ALL_STATS = [
 function Stat({ label, value }) {
   if (value === null || value === undefined || value === '') return null;
   return (
-    <div className="bg-pitch-950/60 rounded-lg px-3 py-2">
-      <div className="text-[11px] text-emerald-200/50">{label}</div>
-      <div className="text-base font-semibold font-mono">{value}</div>
+    <div className="panel-inset px-3 py-2">
+      <div className="label">{label}</div>
+      <div className="num mt-0.5 font-semibold text-ink">{value}</div>
     </div>
   );
 }
@@ -68,42 +68,43 @@ export default function PlayerDetailModal({ player, players, teams, teamName, is
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4"
       onClick={onClose}
     >
       <div
-        className="bg-pitch-900 border border-emerald-800 rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6"
+        className="panel shadow-overlay max-h-[85vh] w-full max-w-lg overflow-y-auto p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
             <PlayerAvatar player={player} size="lg" />
             <div>
-              <div className="text-xl font-bold flex items-center gap-2">
+              <div className="flex items-center gap-2 font-display text-md font-semibold">
                 {player.nome}
-                {target && <span title="Nel tuo mirino" className="text-amber-300">★</span>}
+                {target && <span title="Nel tuo mirino" className="text-warn">★</span>}
               </div>
-              <div className="text-sm text-emerald-200/60">
+              <div className="mt-0.5 text-xs text-ink-3">
                 {ROLE_LABELS[player.ruolo]} · {player.squadra} · Fascia {player.fascia}
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="text-emerald-200/50 hover:text-emerald-100 text-xl leading-none">✕</button>
+          <button onClick={onClose} aria-label="Chiudi" className="shrink-0 text-md leading-none text-ink-3 hover:text-ink">✕</button>
         </div>
 
         {assigned && (
-          <div className="mb-4 bg-emerald-500/10 border border-emerald-800 rounded-lg px-3 py-2">
-            <div className="text-sm text-emerald-300">
-              Assegnato a {teamName || '—'} per {player.soldPrice} crediti.
+          <div className="panel-inset mb-4 px-3 py-2.5">
+            <div className="text-sm text-ink">
+              Assegnato a <span className="font-semibold">{teamName || '—'}</span> per{' '}
+              <span className="num font-semibold">{player.soldPrice}</span> crediti.
             </div>
             {isAdmin && !editing && (
               <div className="flex gap-2 mt-2">
                 <button onClick={openEdit}
-                  className="text-xs rounded-md border border-emerald-700 px-2 py-1 hover:border-emerald-400">
+                  className="btn btn-ghost btn-sm">
                   Modifica squadra/prezzo
                 </button>
                 <button onClick={remove}
-                  className="text-xs rounded-md border border-rose-700 text-rose-300 px-2 py-1 hover:border-rose-400">
+                  className="btn btn-danger btn-sm">
                   Rimuovi dalla rosa
                 </button>
               </div>
@@ -111,34 +112,34 @@ export default function PlayerDetailModal({ player, players, teams, teamName, is
             {isAdmin && editing && (
               <div className="flex flex-wrap gap-2 mt-2 items-center">
                 <select value={editTeam} onChange={(e) => setEditTeam(e.target.value)}
-                  className="bg-pitch-950 border border-emerald-900 rounded-md px-2 py-1 text-xs">
+                  className="field field-sm">
                   {Object.values(teams || {}).map((t) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
                 <input value={editPrice} onChange={(e) => setEditPrice(e.target.value.replace(/\D/g, ''))}
-                  className="w-20 bg-pitch-950 border border-emerald-900 rounded-md px-2 py-1 text-xs font-mono" />
+                  className="field field-sm num w-20" />
                 <button onClick={saveEdit}
-                  className="text-xs rounded-md bg-emerald-500 text-pitch-950 font-semibold px-2 py-1">Salva</button>
-                <button onClick={() => setEditing(false)} className="text-xs text-emerald-200/50 px-1">annulla</button>
+                  className="btn btn-primary btn-sm">Salva</button>
+                <button onClick={() => setEditing(false)} className="btn btn-quiet btn-sm">annulla</button>
               </div>
             )}
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="mb-5 grid grid-cols-3 gap-1">
           <Stat label="Prezzo consigliato" value={player.prezzoConsigliato} />
           <Stat label="Quotazione" value={player.quotazione} />
           <Stat label="PMA" value={player.pma} />
         </div>
 
-        <div className="flex items-center gap-5 text-sm mb-4 bg-pitch-950/60 rounded-lg px-3 py-2.5">
+        <div className="panel-inset mb-5 flex flex-wrap items-center gap-x-6 gap-y-2 px-3 py-2.5 text-sm">
           <div className="flex items-center gap-2">Titolarità <Dots value={player.titolarita} /></div>
           <div className="flex items-center gap-2">Affidabilità <Dots value={player.affidabilita} /></div>
           <div className="flex items-center gap-2">Integrità <Dots value={player.integrita} /></div>
         </div>
 
-        <div className="text-xs font-bold text-emerald-200/50 uppercase tracking-wide mb-2">Stagione scorsa</div>
+        <div className="label mb-2">Stagione scorsa</div>
         {players && (
           <div className="mb-4">
             <StatHeatmap player={player} players={players} />
@@ -152,7 +153,7 @@ export default function PlayerDetailModal({ player, players, teams, teamName, is
           const rows = ALL_STATS.filter((st) => !ranked.has(st.key) && st.roles.includes(player.ruolo));
           if (rows.length === 0) return null;
           return (
-            <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="mb-5 grid grid-cols-3 gap-1">
               {rows.map((st) => (
                 <Stat key={st.key} label={st.label} value={player[st.key]} />
               ))}
@@ -162,10 +163,10 @@ export default function PlayerDetailModal({ player, players, teams, teamName, is
 
         {player.note?.length > 0 && (
           <div className="mb-4">
-            <div className="text-xs font-bold text-emerald-200/50 uppercase tracking-wide mb-2">Note scouting</div>
+            <div className="label mb-2">Note scouting</div>
             <div className="flex flex-wrap gap-1.5">
               {player.note.map((n) => (
-                <span key={n} className="text-xs bg-pitch-950 border border-emerald-900 rounded-full px-2.5 py-1 text-emerald-200/70">
+                <span key={n} className="chip">
                   {n}
                 </span>
               ))}
@@ -175,8 +176,8 @@ export default function PlayerDetailModal({ player, players, teams, teamName, is
 
         {player.commento && (
           <div>
-            <div className="text-xs font-bold text-emerald-200/50 uppercase tracking-wide mb-1">Commento</div>
-            <div className="text-sm text-emerald-200/70 whitespace-pre-line">{player.commento}</div>
+            <div className="label mb-1">Commento</div>
+            <div className="max-w-prose whitespace-pre-line text-sm text-ink-2">{player.commento}</div>
           </div>
         )}
       </div>

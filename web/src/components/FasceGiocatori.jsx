@@ -58,39 +58,39 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
   return (
     <div>
       {isAdmin && (
-        <div className="mb-5 rounded-xl border border-amber-700/40 bg-amber-500/5 p-4">
-          <div className="text-xs font-bold text-amber-300 uppercase tracking-wide mb-2">Carica altre fasce</div>
-          <p className="text-xs text-emerald-200/50 mb-3">
+        <div className="panel mb-6 p-4">
+          <div className="label mb-2 text-warn">Carica altre fasce</div>
+          <p className="text-xs text-ink-3 mb-3">
             Carica un file Excel con lo stesso formato (colonne Ruolo/Nome/Squadra/Fascia, un foglio per
             ruolo o con colonna Ruolo) per confrontare le fasce di altre fonti/esperti.
           </p>
-          <div className="flex flex-wrap gap-2 items-center">
-            <input type="file" accept=".xlsx,.xls" ref={fileRef} className="text-sm text-emerald-200/70" />
+          <div className="flex flex-wrap items-center gap-2">
+            <input type="file" accept=".xlsx,.xls" ref={fileRef} className="text-sm text-ink-2" />
             <input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="nome fonte (es. Esperto X)"
-              className="rounded-lg bg-pitch-950 border border-emerald-900 px-3 py-1.5 text-sm outline-none focus:border-emerald-500"
+              className="field"
             />
             <button
               onClick={handleUpload}
               disabled={uploading}
-              className="rounded-lg bg-emerald-500 text-pitch-950 font-semibold px-3 py-1.5 text-sm hover:bg-emerald-400 disabled:opacity-50"
+              className="btn btn-primary"
             >
-              {uploading ? 'Caricamento...' : 'Carica'}
+              {uploading ? 'Caricamento…' : 'Carica'}
             </button>
           </div>
           {uploadMsg && (
-            <div className={`mt-2 text-sm ${uploadMsg.ok ? 'text-emerald-300' : 'text-rose-400'}`}>{uploadMsg.text}</div>
+            <div className={`mt-2 text-sm ${uploadMsg.ok ? 'text-free' : 'text-danger'}`}>{uploadMsg.text}</div>
           )}
           {sources.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {sources.map((s) => (
-                <span key={s.id} className="inline-flex items-center gap-1.5 text-xs bg-pitch-950 border border-emerald-900 rounded-full px-2.5 py-1">
+                <span key={s.id} className="chip">
                   {s.label} ({s.matchedCount})
                   <button
                     onClick={() => socket.emit('admin:removeFasceSource', { id: s.id })}
-                    className="text-emerald-200/40 hover:text-rose-400"
+                    className="text-ink-3 hover:text-danger"
                   >
                     ✕
                   </button>
@@ -101,13 +101,15 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2 mb-4 items-center">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         {ROLE_ORDER.map((r) => (
           <button
             key={r}
             onClick={() => setRole(r)}
-            className={`px-3 py-1.5 rounded-lg border text-sm font-semibold ${
-              role === r ? 'border-emerald-400 bg-emerald-500/10' : 'border-emerald-900'
+            className={`w-9 rounded border py-1.5 text-sm font-semibold transition-colors ${
+              role === r
+                ? 'border-live bg-surface-2 text-ink'
+                : 'border-line text-ink-3 hover:border-line-strong hover:text-ink'
             }`}
           >
             {r}
@@ -116,40 +118,40 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Cerca nome..."
-          className="rounded-lg bg-pitch-950 border border-emerald-900 px-3 py-1.5 text-sm outline-none focus:border-emerald-500 flex-1 min-w-[160px]"
+          placeholder="Cerca nome…"
+          className="field min-w-[160px] flex-1"
         />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-emerald-900">
-        <table className="w-full text-sm">
-          <thead className="bg-pitch-900/70 text-emerald-200/60">
+      <div className="panel overflow-x-auto">
+        <table className="tbl tbl-rows">
+          <thead>
             <tr>
-              <th className="p-2 text-left"></th>
-              <th className="p-2 text-left">Nome</th>
-              <th className="p-2 text-left">Sq.</th>
-              <th className="p-2 text-left">Fascia</th>
+              <th></th>
+              <th>Nome</th>
+              <th>Sq.</th>
+              <th>Fascia</th>
               {sources.map((s) => (
-                <th key={s.id} className="p-2 text-left whitespace-nowrap">{s.label}</th>
+                <th key={s.id}>{s.label}</th>
               ))}
-              <th className="p-2 text-left">Quot.</th>
-              <th className="p-2 text-left">Consigl.</th>
-              <th className="p-2 text-left" title="Titolarità">Tit.</th>
-              <th className="p-2 text-left" title="Affidabilità">Affid.</th>
-              <th className="p-2 text-left">FMV</th>
-              <th className="p-2 text-left">Pres.</th>
+              <th>Quot.</th>
+              <th>Consigl.</th>
+              <th title="Titolarità">Tit.</th>
+              <th title="Affidabilità">Affid.</th>
+              <th>FMV</th>
+              <th>Pres.</th>
               {isGk ? (
                 <>
-                  <th className="p-2 text-left">Gol sub.</th>
-                  <th className="p-2 text-left">Rig. par.</th>
+                  <th>Gol sub.</th>
+                  <th>Rig. par.</th>
                 </>
               ) : (
                 <>
-                  <th className="p-2 text-left">Gol</th>
-                  <th className="p-2 text-left">Assist</th>
+                  <th>Gol</th>
+                  <th>Assist</th>
                 </>
               )}
-              <th className="p-2 text-left">Stato</th>
+              <th>Stato</th>
             </tr>
           </thead>
           <tbody>
@@ -157,40 +159,39 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
               <tr
                 key={p.id}
                 onClick={() => onSelectPlayer(p.id)}
-                className="border-t border-emerald-900/50 cursor-pointer hover:bg-pitch-900/40"
               >
-                <td className="p-2"><PlayerAvatar player={p} size="sm" /></td>
-                <td className="p-2 font-medium whitespace-nowrap">
-                  {isTarget(p) && <span className="text-amber-300 mr-1">★</span>}
+                <td><PlayerAvatar player={p} size="sm" /></td>
+                <td className="whitespace-nowrap font-medium text-ink">
+                  {isTarget(p) && <span className="text-warn mr-1">★</span>}
                   {p.nome}
                 </td>
-                <td className="p-2">{p.squadra}</td>
-                <td className="p-2">{p.fascia}</td>
+                <td>{p.squadra}</td>
+                <td>{p.fascia}</td>
                 {sources.map((s) => (
-                  <td key={s.id} className="p-2 text-emerald-200/70">{s.values[p.id] || '—'}</td>
+                  <td key={s.id} className="text-ink-2">{s.values[p.id] || '—'}</td>
                 ))}
-                <td className="p-2 font-mono">{p.quotazione}</td>
-                <td className="p-2 font-mono">{p.prezzoConsigliato}</td>
-                <td className="p-2">{p.titolarita}</td>
-                <td className="p-2">{p.affidabilita}</td>
-                <td className="p-2 font-mono">{p.fmv}</td>
-                <td className="p-2">{p.presenze}</td>
+                <td className="num">{p.quotazione}</td>
+                <td className="num">{p.prezzoConsigliato}</td>
+                <td>{p.titolarita}</td>
+                <td>{p.affidabilita}</td>
+                <td className="num">{p.fmv}</td>
+                <td>{p.presenze}</td>
                 {isGk ? (
                   <>
-                    <td className="p-2">{p.golSubiti}</td>
-                    <td className="p-2">{p.rigParati}</td>
+                    <td>{p.golSubiti}</td>
+                    <td>{p.rigParati}</td>
                   </>
                 ) : (
                   <>
-                    <td className="p-2">{p.gol}</td>
-                    <td className="p-2">{p.assist}</td>
+                    <td>{p.gol}</td>
+                    <td>{p.assist}</td>
                   </>
                 )}
-                <td className="p-2 whitespace-nowrap">
+                <td className="whitespace-nowrap">
                   {p.status === 'available' ? (
-                    <span className="text-emerald-400">libero</span>
+                    <span className="text-free">libero</span>
                   ) : (
-                    <span className="text-emerald-200/50">
+                    <span className="text-ink-3">
                       {state.teams[p.soldTo]?.name} · {p.soldPrice}
                     </span>
                   )}
@@ -200,7 +201,7 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
           </tbody>
         </table>
       </div>
-      <div className="text-xs text-emerald-200/40 mt-2">{players.length} giocatori</div>
+      <div className="text-xs text-ink-3 mt-2">{players.length} giocatori</div>
     </div>
   );
 }

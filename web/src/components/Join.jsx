@@ -8,21 +8,23 @@ export default function Join({ state, onClaim }) {
   const taken = teams.filter((t) => t.ownerClientId);
 
   return (
-    <div className="max-w-xl mx-auto mt-10 bg-pitch-900/60 border border-emerald-900 rounded-2xl p-6">
-      <h2 className="text-xl font-bold mb-1">Entra nell'asta</h2>
-      <p className="text-emerald-200/70 text-sm mb-5">
-        Scegli una squadra libera e dai un nome (puoi cambiarlo dopo). Se sei l'organizzatore, entra come una squadra qualsiasi e poi sblocca i controlli admin qui sotto.
+    <div className="panel mx-auto mt-9 max-w-xl p-6">
+      <h2 className="text-lg">Entra nell’asta</h2>
+      <p className="mt-2 max-w-prose text-sm text-ink-2">
+        Scegli una squadra libera e dai un nome; puoi cambiarlo dopo. Se sei l’organizzatore, entra
+        come una squadra qualsiasi e sblocca i controlli admin dalla scheda Admin.
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+      <div className="label mt-6">Squadre libere</div>
+      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {free.map((t) => (
           <button
             key={t.id}
             onClick={() => setSelected(t.id)}
-            className={`rounded-lg border px-3 py-2 text-sm text-left transition ${
+            className={`rounded border px-3 py-2 text-left text-sm transition-colors ${
               selected === t.id
-                ? 'border-emerald-400 bg-emerald-500/10'
-                : 'border-emerald-900 hover:border-emerald-700'
+                ? 'border-live bg-surface-2 font-semibold text-ink'
+                : 'border-line text-ink-2 hover:border-line-strong hover:text-ink'
             }`}
           >
             {t.name}
@@ -31,26 +33,21 @@ export default function Join({ state, onClaim }) {
       </div>
 
       {taken.length > 0 && (
-        <p className="text-xs text-emerald-200/50 mb-4">
-          Già occupate: {taken.map((t) => t.name).join(', ')}
-        </p>
+        <p className="mt-3 text-xs text-ink-3">Già occupate: {taken.map((t) => t.name).join(', ')}</p>
       )}
 
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Nome squadra (facoltativo)"
-        className="w-full mb-4 rounded-lg bg-pitch-950 border border-emerald-900 px-3 py-2 text-sm outline-none focus:border-emerald-500"
-        maxLength={40}
-      />
-
-      <button
-        disabled={!selected}
-        onClick={() => onClaim(selected, name)}
-        className="w-full rounded-lg bg-emerald-500 disabled:bg-emerald-900 disabled:text-emerald-500/50 text-pitch-950 font-semibold py-2.5 hover:bg-emerald-400 transition"
-      >
-        Entra
-      </button>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nome squadra (facoltativo)"
+          className="field flex-1"
+          maxLength={40}
+        />
+        <button disabled={!selected} onClick={() => onClaim(selected, name)} className="btn btn-primary sm:px-6">
+          Entra
+        </button>
+      </div>
     </div>
   );
 }

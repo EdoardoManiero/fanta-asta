@@ -2,11 +2,136 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root { height: 100%; }
-body {
-  background: #06120c;
-  color: #e7f3ec;
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-ground text-ink font-sans text-sm antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-semibold text-ink;
+  }
+
+  /* Numerals change constantly in this app: lock their width so budgets and
+     bids don't jitter as they tick. */
+  .font-mono,
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    @apply bg-live text-ground;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-line-strong rounded;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-3;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #1c3b28; border-radius: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
+
+@layer components {
+  /* ---- surfaces -------------------------------------------------------
+     Depth comes from a tone step OR a hairline, never both plus a shadow.
+     Nested content uses `panel-inset` (tone only) so cards never sprout
+     borders inside borders. */
+  .panel {
+    @apply bg-surface border border-line rounded;
+  }
+  .panel-inset {
+    @apply bg-surface-2 rounded;
+  }
+
+  /* ---- type -----------------------------------------------------------
+     Section labels earn their place through weight and colour, not
+     uppercase tracking. */
+  .label {
+    @apply text-2xs font-semibold text-ink-3;
+  }
+  .num {
+    @apply font-mono;
+  }
+
+  /* ---- controls -------------------------------------------------------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded px-3 py-2
+           text-sm font-semibold whitespace-nowrap
+           transition-colors duration-100
+           disabled:opacity-40 disabled:cursor-not-allowed
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-live focus-visible:ring-offset-2
+           focus-visible:ring-offset-ground;
+  }
+  .btn-primary {
+    @apply bg-live text-ground enabled:hover:bg-live-hover enabled:active:bg-live-press;
+  }
+  .btn-ghost {
+    @apply border border-line-strong text-ink enabled:hover:bg-surface-3;
+  }
+  /* Destructive is an outline, always — it can never be confused with the
+     filled primary action. */
+  .btn-danger {
+    @apply border border-line-strong text-danger enabled:hover:border-danger enabled:hover:bg-surface-3;
+  }
+  .btn-quiet {
+    @apply text-ink-3 enabled:hover:text-ink font-medium;
+  }
+  .btn-sm {
+    @apply px-2 py-1 text-2xs;
+  }
+
+  .field {
+    @apply rounded bg-ground border border-line px-3 py-2 text-sm text-ink
+           placeholder:text-ink-3 outline-none transition-colors
+           focus:border-live disabled:opacity-40;
+  }
+  .field-sm {
+    @apply px-2 py-1 text-xs;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded border border-line
+           bg-surface-2 px-2 py-1 text-2xs text-ink-2;
+  }
+
+  /* ---- tables ---------------------------------------------------------
+     The densest surface in the app; row separation is a hairline only. */
+  .tbl {
+    @apply w-full border-collapse text-sm;
+  }
+  .tbl thead th {
+    @apply bg-surface-2 border-b border-line px-3 py-2
+           text-left text-2xs font-semibold text-ink-3 whitespace-nowrap;
+  }
+  .tbl tbody td {
+    @apply border-b border-line px-3 py-2 align-middle;
+  }
+  .tbl tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  .tbl-rows tbody tr {
+    @apply cursor-pointer transition-colors duration-75;
+  }
+  .tbl-rows tbody tr:hover td {
+    @apply bg-surface-3;
+  }
+}

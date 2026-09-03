@@ -8,7 +8,7 @@ export default function PlayerSearchInput({
   players,
   value,          // selected player id, or ''
   onSelect,       // (playerId | '') => void
-  placeholder = 'Cerca giocatore...',
+  placeholder = 'Cerca giocatore…',
   filter,         // optional extra predicate
   limit = 8,
   autoFocus = false,
@@ -77,13 +77,13 @@ export default function PlayerSearchInput({
   return (
     <div ref={boxRef} className="relative flex-1 min-w-[180px]">
       {selected ? (
-        <div className="flex items-center gap-2 rounded-lg bg-pitch-950 border border-emerald-700 px-3 py-2 text-sm">
-          {isTarget(selected) && <span className="text-amber-300">★</span>}
+        <div className="field flex w-full items-center gap-2">
+          {isTarget(selected) && <span className="text-warn">★</span>}
           <span className="font-medium truncate">{selected.nome}</span>
-          <span className="text-emerald-200/50 text-xs">
+          <span className="text-xs text-ink-3">
             {selected.ruolo} · {selected.squadra} · Quot. {selected.quotazione}
           </span>
-          <button onClick={clear} className="ml-auto text-emerald-200/50 hover:text-emerald-100">✕</button>
+          <button onClick={clear} className="ml-auto shrink-0 text-ink-3 hover:text-ink">✕</button>
         </div>
       ) : (
         <input
@@ -93,27 +93,27 @@ export default function PlayerSearchInput({
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
-          className="w-full rounded-lg bg-pitch-950 border border-emerald-900 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+          className="field w-full"
         />
       )}
 
       {open && !selected && suggestions.length > 0 && (
-        <ul className="absolute z-30 left-0 right-0 mt-1 bg-pitch-900 border border-emerald-800 rounded-lg shadow-xl overflow-hidden max-h-72 overflow-y-auto">
+        <ul className="panel shadow-overlay absolute left-0 right-0 z-30 mt-1 max-h-72 overflow-hidden overflow-y-auto">
           {suggestions.map((p, i) => (
             <li key={p.id}>
               <button
                 onMouseEnter={() => setCursor(i)}
                 onClick={() => pick(p)}
-                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 ${
-                  i === cursor ? 'bg-emerald-500/15' : ''
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+                  i === cursor ? 'bg-surface-3' : ''
                 }`}
               >
-                {isTarget(p) && <span className="text-amber-300 text-xs">★</span>}
+                {isTarget(p) && <span className="text-warn text-xs">★</span>}
                 <span className="font-medium truncate">{p.nome}</span>
-                <span className="text-emerald-200/40 text-xs">{p.ruolo} · {p.squadra}</span>
-                <span className="ml-auto font-mono text-emerald-300/80 text-xs">{p.quotazione}</span>
+                <span className="text-ink-3 text-xs">{p.ruolo} · {p.squadra}</span>
+                <span className="num ml-auto text-xs text-ink-2">{p.quotazione}</span>
                 {p.status !== 'available' && (
-                  <span className="text-[10px] text-rose-300/70 whitespace-nowrap">preso</span>
+                  <span className="text-2xs text-danger whitespace-nowrap">preso</span>
                 )}
               </button>
             </li>

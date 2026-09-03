@@ -2,17 +2,23 @@ export default function TeamsSidebar({ state, myTeamId }) {
   const teams = Object.values(state.teams).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
 
   return (
-    <div className="rounded-xl border border-emerald-900 bg-pitch-900/50 overflow-hidden">
+    <div className="panel overflow-hidden">
+      <div className="label border-b border-line px-3 py-2">Squadre</div>
       {teams.map((t) => (
         <div
           key={t.id}
-          className={`flex items-center gap-2 px-3 py-2 text-sm border-b border-emerald-900/50 last:border-b-0 ${
-            t.id === myTeamId ? 'bg-emerald-500/10' : ''
+          className={`flex items-center gap-2 border-b border-line px-3 py-2 text-xs last:border-b-0 ${
+            t.id === myTeamId ? 'bg-surface-2' : ''
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${t.connected ? 'bg-emerald-400' : 'bg-emerald-900'}`} />
-          <span className="truncate flex-1">{t.name}</span>
-          <span className="font-mono text-emerald-300/80 text-xs">{t.budget}</span>
+          <span
+            className={`h-1.5 w-1.5 shrink-0 rounded-full ${t.connected ? 'bg-free' : 'bg-line-strong'}`}
+            title={t.connected ? 'in linea' : 'disconnesso'}
+          />
+          <span className={`flex-1 truncate ${t.id === myTeamId ? 'font-semibold text-ink' : 'text-ink-2'}`}>
+            {t.name}
+          </span>
+          <span className="num text-ink">{t.budget}</span>
         </div>
       ))}
     </div>

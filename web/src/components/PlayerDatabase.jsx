@@ -51,13 +51,15 @@ export default function PlayerDatabase({ state, isAdmin, onNominate, onSelectPla
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2 mb-4 items-center">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         {ROLE_ORDER.map((r) => (
           <button
             key={r}
             onClick={() => setRole(r)}
-            className={`px-3 py-1.5 rounded-lg border text-sm font-semibold ${
-              role === r ? 'border-emerald-400 bg-emerald-500/10' : 'border-emerald-900'
+            className={`w-9 rounded border py-1.5 text-sm font-semibold transition-colors ${
+              role === r
+                ? 'border-live bg-surface-2 text-ink'
+                : 'border-line text-ink-3 hover:border-line-strong hover:text-ink'
             }`}
           >
             {r}
@@ -66,35 +68,35 @@ export default function PlayerDatabase({ state, isAdmin, onNominate, onSelectPla
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Cerca nome o squadra..."
-          className="rounded-lg bg-pitch-950 border border-emerald-900 px-3 py-1.5 text-sm outline-none focus:border-emerald-500 flex-1 min-w-[160px]"
+          placeholder="Cerca nome o squadra…"
+          className="field min-w-[160px] flex-1"
         />
-        <label className="flex items-center gap-1.5 text-sm text-emerald-200/70">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-2">
           <input type="checkbox" checked={onlyAvailable} onChange={(e) => setOnlyAvailable(e.target.checked)} />
           solo liberi
         </label>
-        <label className="flex items-center gap-1.5 text-sm text-amber-300/80">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-2">
           <input type="checkbox" checked={onlyTargets} onChange={(e) => setOnlyTargets(e.target.checked)} />
-          ★ solo obiettivi
+          <span className="text-warn">★</span> solo obiettivi
         </label>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-emerald-900">
-        <table className="w-full text-sm">
-          <thead className="bg-pitch-900/70 text-emerald-200/60">
+      <div className="panel overflow-x-auto">
+        <table className="tbl tbl-rows">
+          <thead>
             <tr>
-              <th className="p-2 text-left"></th>
+              <th></th>
               {COLUMNS.map((c) => (
                 <th
                   key={c.key}
                   onClick={() => toggleSort(c.key)}
-                  className="p-2 text-left cursor-pointer select-none hover:text-emerald-100 whitespace-nowrap"
+                  className="cursor-pointer select-none hover:text-ink"
                 >
                   {c.label} {sortKey === c.key ? (sortDir === 'asc' ? '↑' : '↓') : ''}
                 </th>
               ))}
-              <th className="p-2 text-left">Stato</th>
-              {isAdmin && <th className="p-2"></th>}
+              <th>Stato</th>
+              {isAdmin && <th></th>}
             </tr>
           </thead>
           <tbody>
@@ -102,38 +104,38 @@ export default function PlayerDatabase({ state, isAdmin, onNominate, onSelectPla
               <tr
                 key={p.id}
                 onClick={() => onSelectPlayer(p.id)}
-                className={`border-t border-emerald-900/50 cursor-pointer hover:bg-pitch-900/40 ${p.status !== 'available' ? 'opacity-40' : ''}`}
+                className={p.status !== 'available' ? 'text-ink-3' : ''}
               >
-                <td className="p-2"><PlayerAvatar player={p} size="sm" /></td>
-                <td className="p-2 font-medium whitespace-nowrap">
-                  {isTarget(p) && <span className="text-amber-300 mr-1">★</span>}
+                <td><PlayerAvatar player={p} size="sm" /></td>
+                <td className="whitespace-nowrap font-medium text-ink">
+                  {isTarget(p) && <span className="text-warn mr-1">★</span>}
                   {p.nome}
                 </td>
-                <td className="p-2">{p.squadra}</td>
-                <td className="p-2">{p.fascia}</td>
-                <td className="p-2 font-mono">{p.quotazione}</td>
-                <td className="p-2 font-mono">{p.prezzoConsigliato}</td>
-                <td className="p-2">{p.titolarita}</td>
-                <td className="p-2">{p.affidabilita}</td>
-                <td className="p-2 font-mono">{p.fmv}</td>
-                <td className="p-2">{p.presenze}</td>
-                <td className="p-2">{p.gol}</td>
-                <td className="p-2">{p.assist}</td>
-                <td className="p-2 whitespace-nowrap">
+                <td>{p.squadra}</td>
+                <td>{p.fascia}</td>
+                <td className="num">{p.quotazione}</td>
+                <td className="num">{p.prezzoConsigliato}</td>
+                <td>{p.titolarita}</td>
+                <td>{p.affidabilita}</td>
+                <td className="num">{p.fmv}</td>
+                <td>{p.presenze}</td>
+                <td>{p.gol}</td>
+                <td>{p.assist}</td>
+                <td className="whitespace-nowrap">
                   {p.status === 'available' ? (
-                    <span className="text-emerald-400">libero</span>
+                    <span className="text-free">libero</span>
                   ) : (
-                    <span className="text-emerald-200/50">
+                    <span className="text-ink-3">
                       {state.teams[p.soldTo]?.name} · {p.soldPrice}
                     </span>
                   )}
                 </td>
                 {isAdmin && (
-                  <td className="p-2">
+                  <td>
                     {p.status === 'available' && !state.currentAuction && (
                       <button
                         onClick={(e) => { e.stopPropagation(); onNominate(p.id); }}
-                        className="text-xs rounded-md border border-emerald-700 px-2 py-1 hover:border-emerald-400"
+                        className="btn btn-ghost btn-sm"
                       >
                         Metti all'asta
                       </button>
@@ -145,7 +147,7 @@ export default function PlayerDatabase({ state, isAdmin, onNominate, onSelectPla
           </tbody>
         </table>
       </div>
-      <div className="text-xs text-emerald-200/40 mt-2">{filtered.length} giocatori</div>
+      <div className="text-xs text-ink-3 mt-2">{filtered.length} giocatori</div>
     </div>
   );
 }

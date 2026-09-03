@@ -36,18 +36,23 @@ export default function InsightPanel({ state }) {
   }, [player, state.players]);
 
   return (
-    <div className="rounded-xl border border-emerald-900 bg-pitch-900/50 p-5 flex items-center justify-center text-center h-full">
-      {insight ? (
-        <p className="text-emerald-100 text-lg leading-snug">
-          <span className="text-amber-300 font-bold">{player.nome}</span> è il {insight.ord}{' '}
-          {insight.roleLabel} per {insight.statLabel} (
-          <span className="text-emerald-300 font-semibold">{insight.val}</span>).
-        </p>
-      ) : (
-        <p className="text-emerald-200/40 text-sm">
-          {player ? "Nessuna statistica rilevante per questo giocatore." : 'In attesa del prossimo giocatore all\'asta...'}
-        </p>
-      )}
+    <div className="panel p-4">
+      <div className="label">Nota</div>
+      <div className="mt-2">
+        {insight ? (
+          <p className="text-base text-ink">
+            <span className="font-semibold">{player.nome}</span> è il{' '}
+            <span className="num font-semibold">{insight.ord}</span> {insight.roleLabel} per{' '}
+            {insight.statLabel} (<span className="num font-semibold">{insight.val}</span>).
+          </p>
+        ) : (
+          <p className="text-sm text-ink-3">
+            {player
+              ? 'Nessuna statistica rilevante per questo giocatore.'
+              : 'In attesa del prossimo giocatore all’asta.'}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

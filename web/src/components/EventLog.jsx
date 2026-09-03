@@ -1,11 +1,11 @@
 export default function EventLog({ state }) {
   return (
-    <div className="rounded-xl border border-emerald-900 bg-pitch-900/50 p-4 max-h-96 overflow-y-auto">
-      {state.log.length === 0 && <div className="text-emerald-200/40 text-sm">Nessun evento ancora.</div>}
-      <ul className="space-y-1.5">
+    <div className="panel max-h-96 overflow-y-auto p-4">
+      {state.log.length === 0 && <div className="text-sm text-ink-3">Nessun evento ancora.</div>}
+      <ul className="space-y-2">
         {state.log.map((e, i) => (
-          <li key={i} className="text-sm text-emerald-200/70 flex gap-2">
-            <span className="text-emerald-200/30 font-mono text-xs shrink-0">
+          <li key={i} className="flex gap-3 text-sm text-ink-2">
+            <span className="num shrink-0 text-2xs text-ink-3">
               {new Date(e.ts).toLocaleTimeString('it-IT')}
             </span>
             <span>{e.message}</span>

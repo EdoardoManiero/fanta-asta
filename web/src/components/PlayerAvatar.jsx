@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 const SIZES = {
-  sm: 'w-8 h-8 text-xs',
-  md: 'w-12 h-12 text-sm',
-  lg: 'w-16 h-16 text-xl',
+  sm: 'w-7 h-7 text-2xs',
+  md: 'w-11 h-11 text-xs',
+  lg: 'w-14 h-14 text-md',
 };
 
 export default function PlayerAvatar({ player, size = 'md' }) {
@@ -12,13 +12,13 @@ export default function PlayerAvatar({ player, size = 'md' }) {
 
   return (
     <div
-      className={`${SIZES[size]} rounded-full bg-pitch-950 border-2 border-emerald-700 flex items-center justify-center font-black text-emerald-300 overflow-hidden shrink-0`}
+      className={`${SIZES[size]} flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-line-strong bg-surface-2 font-display font-semibold text-ink-3`}
     >
       {showPhoto ? (
         <img
           src={player.photoUrl}
           alt=""
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
           onError={() => setErrored(true)}
         />
       ) : (
