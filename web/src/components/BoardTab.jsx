@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ROLE_ORDER, ROLE_BAR_COLORS, maxSingleBid } from '../format.js';
+import { ROLE_ORDER, maxSingleBid } from '../format.js';
 
 export default function BoardTab({ state, myTeamId }) {
   const [open, setOpen] = useState({ P: true, D: true, C: true, A: true });
@@ -47,7 +47,7 @@ export default function BoardTab({ state, myTeamId }) {
               <button
                 onClick={() => setOpen((o) => ({ ...o, [role]: !o[role] }))}
                 style={{ gridColumn: '1 / -1' }}
-                className={`flex items-center justify-between border-b border-t border-line bg-surface-2 px-3 py-2 text-2xs font-semibold ${ROLE_BAR_COLORS[role]}`}
+                className="flex items-center justify-between border-b border-t border-line bg-surface-2 px-3 py-2 text-2xs font-semibold text-ink-2"
               >
                 <span>{role} · <span className="num">{pct}%</span></span>
                 <span>{open[role] ? '▾' : '▸'}</span>

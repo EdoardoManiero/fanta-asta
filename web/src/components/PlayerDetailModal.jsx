@@ -81,7 +81,7 @@ export default function PlayerDetailModal({ player, players, teams, teamName, is
             <div>
               <div className="flex items-center gap-2 font-display text-md font-semibold">
                 {player.nome}
-                {target && <span title="Nel tuo mirino" className="text-warn">★</span>}
+                {target && <span title="Nel tuo mirino" className="text-live-soft">★</span>}
               </div>
               <div className="mt-0.5 text-xs text-ink-3">
                 {ROLE_LABELS[player.ruolo]} · {player.squadra} · Fascia {player.fascia}

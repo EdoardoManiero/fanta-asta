@@ -180,7 +180,7 @@ function OnTheBlock({ state, myTeam, socket, onSelectPlayer }) {
           <PlayerAvatar player={player} size="lg" />
           <div>
             <div className="flex items-center gap-2 font-display text-xl font-bold">
-              {isTarget(player) && <span className="text-warn" title="Nel tuo mirino">★</span>}
+              {isTarget(player) && <span className="text-live-soft" title="Nel tuo mirino">★</span>}
               {player.nome}
             </div>
             <div className="mt-0.5 text-xs text-ink-2">
@@ -193,7 +193,7 @@ function OnTheBlock({ state, myTeam, socket, onSelectPlayer }) {
         <div className="text-right">
           <div
             className={`num text-2xl font-semibold leading-none ${
-              msLeft != null && msLeft < 5000 ? 'text-warn' : 'text-ink'
+              msLeft != null && msLeft < 5000 ? 'text-live-soft' : 'text-ink'
             }`}
           >
             {ca.timerEndsAt ? fmtSecs(msLeft) : '—'}
@@ -274,7 +274,7 @@ function OnTheBlock({ state, myTeam, socket, onSelectPlayer }) {
               )}
               <span
                 className={`num text-md font-semibold leading-none ${
-                  msLeft != null && msLeft < 5000 ? 'text-warn' : 'text-ink'
+                  msLeft != null && msLeft < 5000 ? 'text-live-soft' : 'text-ink'
                 }`}
               >
                 {ca.timerEndsAt ? fmtSecs(msLeft) : '—'}
@@ -285,7 +285,7 @@ function OnTheBlock({ state, myTeam, socket, onSelectPlayer }) {
             <div className="pt-1.5 text-xs text-ink-3">Entra in una squadra per poter offrire.</div>
           )}
           {myTeam && !canBid && (
-            <div className="pt-1.5 text-xs text-warn">
+            <div className="pt-1.5 text-xs text-danger">
               Reparto {player.ruolo} già completo per la tua squadra: non puoi offrire.
             </div>
           )}

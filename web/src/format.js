@@ -1,21 +1,5 @@
 export const ROLE_LABELS = { P: 'Portiere', D: 'Difensore', C: 'Centrocampista', A: 'Attaccante' };
 export const ROLE_ORDER = ['P', 'D', 'C', 'A'];
-// Roles are categorical data, so they get a categorical palette — but always
-// as an OUTLINED chip, never a fill, so a role marker can never be mistaken
-// for the filled primary action.
-export const ROLE_COLORS = {
-  P: 'border-role-P text-role-P',
-  D: 'border-role-D text-role-D',
-  C: 'border-role-C text-role-C',
-  A: 'border-role-A text-role-A',
-};
-export const ROLE_BAR_COLORS = {
-  P: 'text-role-P',
-  D: 'text-role-D',
-  C: 'text-role-C',
-  A: 'text-role-A',
-};
-
 export const FASCIA_ORDER = ['Top', 'Semi-Top', 'Terza', 'Quarta', 'Titolare "Scarso"', 'Scomm.', 'Outsider', 'Non Impostata'];
 
 export function isTarget(player) {

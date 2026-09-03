@@ -18,10 +18,18 @@ loud colour reserved for the thing you press.
 
 Two deliberate choices follow from that:
 
-**No green.** "Football → pitch green" is the reflex, and the app was built on it —
-a green page, green borders, green text, green buttons. When the theme is green,
-green can't *mean* anything. Here the ground is warm graphite and green is demoted
-to a single job: available / connected / yours.
+**No green, and no tint at all.** "Football → pitch green" is the reflex, and the
+app was built on it — a green page, green borders, green text, green buttons. When
+the theme is green, green can't *mean* anything. So green is demoted to one job:
+available / connected / yours.
+
+The neutrals it left behind must then be *actually neutral*. A first pass here used
+warm graphite (`#100f0d` ground, `#bcb3a6` / `#a1978a` ink) with amber section
+labels, and the result read as **gold-on-black** — a tinted theme, the luxury-template
+look, exactly the generic tell it was meant to avoid. A warm grey ramp plus any warm
+accent stops being "neutral plus an accent" and becomes a colour scheme. Every grey
+in the palette below is therefore neutral to a hair cool (**R−B ≤ 0**), which is the
+condition that lets the single accent land.
 
 **Gazzetta pink for action.** Italian fantacalcio runs on the *listone* — the dense
 price list printed on Gazzetta dello Sport's pink newsprint. That pink is the
@@ -37,38 +45,43 @@ appear on. Verified numerically, not by eye.
 ### Surfaces
 | Token | Value | Use |
 |---|---|---|
-| `ground` | `#100f0d` | page, sticky bars, input wells |
-| `surface` | `#1a1815` | panels |
-| `surface-2` | `#24211d` | inset content, table headers, selected row |
-| `surface-3` | `#302c27` | hover |
-| `line` | `#3a352f` | hairline borders, table rules |
-| `line-strong` | `#4d463e` | control borders, scrollbar, faint placeholders |
+| `ground` | `#0e0e10` | page, sticky bars, input wells |
+| `surface` | `#17171a` | panels |
+| `surface-2` | `#1f1f23` | inset content, table headers, selected row |
+| `surface-3` | `#2a2a2f` | hover |
+| `line` | `#33333a` | hairline borders, table rules |
+| `line-strong` | `#45454e` | control borders, scrollbar, faint placeholders |
 
 ### Ink
 | Token | Value | Min contrast (on `surface-3`, the worst case) |
 |---|---|---|
-| `ink` | `#f2ede6` | 11.90:1 |
-| `ink-2` | `#bcb3a6` | 6.69:1 |
-| `ink-3` | `#a1978a` | 4.82:1 |
+| `ink` | `#f3f3f5` | 12.94:1 |
+| `ink-2` | `#b2b2bb` | 5.98:1 |
+| `ink-3` | `#91919c` | 4.58:1 |
 
 ### Semantic — each colour means exactly one thing
 | Token | Value | Means | Form |
 |---|---|---|---|
 | `live` | `#e8536c` | the primary action | **fill only** (`#f06a80` hover, `#d33e57` active) |
-| `warn` | `#e8a33d` | attention: closing timer, admin, target star | text / border |
-| `free` | `#6fbe92` | available · connected · yours | text / 1.5px dot |
-| `danger` | `#e5806f` | destructive | **outline only, never a fill** |
+| `live-soft` | `#f4798d` | the accent when it must be *text*: closing timer, target star | text only |
+| `free` | `#5fbf8d` | available · connected · yours | text / 1.5px dot |
+| `danger` | `#ef8779` | destructive | **outline only, never a fill** |
+
+There is **one** accent hue. An earlier amber `warn` token has been removed: it was
+carrying "attention" on section labels, which is not an attention moment, and it was
+the main source of the gold cast. Attention now belongs to the accent (`live-soft`
+for the closing countdown and the ★ target marker); section labels are plain `ink-3`.
 
 `live` is always a fill and `danger` is always an outline, so the two reds can
 never be confused at a glance — which matters when "Offri" and "Reset asta" sit on
 the same screen. `live` as *text* is only permitted on `ground` / `surface`
 (4.96:1); on `surface-2` it falls to 4.49:1 and is not used.
 
-### Categorical — player roles
-`role-P #dfae4d` · `role-D #7fb0e6` · `role-C #6fbe92` · `role-A #ee8270`
-
-Rendered **only as outlined chips** (border + text), never filled, so a role marker
-is formally distinct from the filled action colour. All clear 5.3:1 on every surface.
+### Categorical — none
+Player roles carry **no colour**. A four-hue role palette is a rainbow-coding tell,
+and it was redundant: the letter P/D/C/A already names the role unambiguously, and
+the tables are filtered to one role at a time. The board's role bands are `surface-2`
+with `ink-2` text.
 
 ### Sequential — stat heat map
 A single-hue blue ramp, six steps (`#184f95 → #cde2fb`), in `StatHeatmap.jsx`.
@@ -77,7 +90,7 @@ ranking scale gets it. Monotone in lightness, each step paired with the ink that
 reaches ≥4.5:1 on it, dark end still separating from `surface-2` at 1.98:1.
 Colour is a *secondary* encoding — the real value is always printed on the tile.
 
-`scrim` is `rgba(9,8,7,0.8)`. There is no pure black and no pure white in the app.
+`scrim` is `rgba(6,6,8,0.8)`. There is no pure black and no pure white in the app.
 
 ## Type
 
@@ -153,6 +166,8 @@ one-off cluster of utilities that re-implements one of these is drift.
 Non-negotiable, and all checkable:
 
 - Contrast ≥ 4.5:1 body, ≥ 3:1 large. No exceptions in the palette above.
+- Every neutral is neutral: `R − B ≤ 0` for every grey. A warm grey ramp plus a warm
+  accent reads as a tinted theme, not as a neutral surface.
 - No text below 11px; body 14–16px.
 - Body line-height 1.5–1.7; prose ≤ ~80 characters.
 - Container padding ≥ 8px; body text never flush to the viewport edge.

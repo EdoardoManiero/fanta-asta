@@ -33,7 +33,7 @@ export default function AdminPanel({ state, socket, isAdmin, onAuth }) {
 
   return (
     <div className="panel space-y-5 p-5">
-      <div className="label text-warn">Pannello admin</div>
+      <div className="label">Pannello admin</div>
 
       {state.phase === 'lobby' && (
         <div className="space-y-2">

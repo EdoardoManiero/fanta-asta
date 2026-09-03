@@ -13,47 +13,43 @@ export default {
       current: 'currentColor',
       inherit: 'inherit',
 
-      // surfaces — warm graphite, four steps, separated by tone not shadow
-      ground: '#100f0d',
+      // Surfaces and ink are deliberately NEUTRAL (a hair cool, R-B <= 0).
+      // Warmth in the greys mixes with any accent and the whole page reads as a
+      // tinted theme: a warm grey ramp plus an amber label colour reads as
+      // gold-on-black. Keeping every neutral neutral is what lets the single
+      // accent actually land.
+      ground: '#0e0e10',
       surface: {
-        DEFAULT: '#1a1815',
-        2: '#24211d',
-        3: '#302c27',
+        DEFAULT: '#17171a',
+        2: '#1f1f23',
+        3: '#2a2a2f',
       },
       line: {
-        DEFAULT: '#3a352f',
-        strong: '#4d463e',
+        DEFAULT: '#33333a',
+        strong: '#45454e',
       },
 
       // ink — three levels, all >= 4.5:1 on every surface above
       ink: {
-        DEFAULT: '#f2ede6',
-        2: '#bcb3a6',
-        3: '#a1978a',
+        DEFAULT: '#f3f3f5',
+        2: '#b2b2bb',
+        3: '#91919c',
       },
 
-      // action — always a fill, never an outline
+      // The one accent. `soft` is the lighter tint for when the accent must be
+      // TEXT rather than a fill, so it still clears 4.5:1 on every surface.
       live: {
         DEFAULT: '#e8536c',
         hover: '#f06a80',
         press: '#d33e57',
+        soft: '#f4798d',
       },
 
       // status — each means exactly one thing
-      warn: '#e8a33d',   // attention: closing timer, admin surface, target star
-      free: '#6fbe92',   // available / connected / your team
-      danger: '#e5806f', // destructive — always an outline, never a fill
+      free: '#5fbf8d',   // available / connected / your team
+      danger: '#ef8779', // destructive — always an outline, never a fill
 
-      // categorical: player roles. Outlined chips only, so they can never be
-      // mistaken for the filled action colour.
-      role: {
-        P: '#dfae4d',
-        D: '#7fb0e6',
-        C: '#6fbe92',
-        A: '#ee8270',
-      },
-
-      scrim: 'rgba(9, 8, 7, 0.8)',
+      scrim: 'rgba(6, 6, 8, 0.8)',
     },
 
     fontFamily: {

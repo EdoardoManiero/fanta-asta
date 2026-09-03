@@ -92,7 +92,7 @@ export default function App() {
           Asta <span className="font-medium text-ink-3">Classic</span>
         </div>
         <div className="ml-auto flex items-center gap-3 text-xs">
-          {isAdmin && <span className="chip border-line-strong text-warn">Admin</span>}
+          {isAdmin && <span className="chip">Admin</span>}
           <span className="text-ink-2">{myTeam ? myTeam.name : 'spettatore'}</span>
           <span className="flex items-center gap-1.5 text-ink-3">
             <span className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-free' : 'bg-danger'}`} />

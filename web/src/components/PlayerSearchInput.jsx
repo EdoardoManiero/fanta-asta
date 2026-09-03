@@ -78,7 +78,7 @@ export default function PlayerSearchInput({
     <div ref={boxRef} className="relative flex-1 min-w-[180px]">
       {selected ? (
         <div className="field flex w-full items-center gap-2">
-          {isTarget(selected) && <span className="text-warn">★</span>}
+          {isTarget(selected) && <span className="text-live-soft">★</span>}
           <span className="font-medium truncate">{selected.nome}</span>
           <span className="text-xs text-ink-3">
             {selected.ruolo} · {selected.squadra} · Quot. {selected.quotazione}
@@ -108,7 +108,7 @@ export default function PlayerSearchInput({
                   i === cursor ? 'bg-surface-3' : ''
                 }`}
               >
-                {isTarget(p) && <span className="text-warn text-xs">★</span>}
+                {isTarget(p) && <span className="text-xs">★</span>}
                 <span className="font-medium truncate">{p.nome}</span>
                 <span className="text-ink-3 text-xs">{p.ruolo} · {p.squadra}</span>
                 <span className="num ml-auto text-xs text-ink-2">{p.quotazione}</span>

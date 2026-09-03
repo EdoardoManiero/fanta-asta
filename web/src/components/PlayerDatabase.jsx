@@ -77,7 +77,7 @@ export default function PlayerDatabase({ state, isAdmin, onNominate, onSelectPla
         </label>
         <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-2">
           <input type="checkbox" checked={onlyTargets} onChange={(e) => setOnlyTargets(e.target.checked)} />
-          <span className="text-warn">★</span> solo obiettivi
+          <span className="text-live-soft">★</span> solo obiettivi
         </label>
       </div>
 
@@ -108,7 +108,7 @@ export default function PlayerDatabase({ state, isAdmin, onNominate, onSelectPla
               >
                 <td><PlayerAvatar player={p} size="sm" /></td>
                 <td className="whitespace-nowrap font-medium text-ink">
-                  {isTarget(p) && <span className="text-warn mr-1">★</span>}
+                  {isTarget(p) && <span className="mr-1 text-live-soft">★</span>}
                   {p.nome}
                 </td>
                 <td>{p.squadra}</td>

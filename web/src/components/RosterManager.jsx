@@ -39,7 +39,7 @@ export default function RosterManager({ state, socket }) {
 
   return (
     <div className="space-y-4 border-t border-line pt-5">
-      <div className="label text-warn">Gestione rose</div>
+      <div className="label">Gestione rose</div>
 
       <div className="flex flex-wrap gap-2 items-center">
         <select

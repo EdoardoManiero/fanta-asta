@@ -59,7 +59,7 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
     <div>
       {isAdmin && (
         <div className="panel mb-6 p-4">
-          <div className="label mb-2 text-warn">Carica altre fasce</div>
+          <div className="label mb-2">Carica altre fasce</div>
           <p className="text-xs text-ink-3 mb-3">
             Carica un file Excel con lo stesso formato (colonne Ruolo/Nome/Squadra/Fascia, un foglio per
             ruolo o con colonna Ruolo) per confrontare le fasce di altre fonti/esperti.
@@ -162,7 +162,7 @@ export default function FasceGiocatori({ state, isAdmin, socket, onSelectPlayer 
               >
                 <td><PlayerAvatar player={p} size="sm" /></td>
                 <td className="whitespace-nowrap font-medium text-ink">
-                  {isTarget(p) && <span className="text-warn mr-1">★</span>}
+                  {isTarget(p) && <span className="mr-1 text-live-soft">★</span>}
                   {p.nome}
                 </td>
                 <td>{p.squadra}</td>
